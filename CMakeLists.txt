@@ -4,6 +4,7 @@ cmake_minimum_required (VERSION 2.6)
 project (WordModel)
 set (WordModel_VERSION_MAJOR 0)
 set (WordModel_VERSION_MINOR 1)
+set (WordModel_DESCRIPTION "A C++ syntax and topic word model")
 
 #compilation flags
 set (CXX_STD_VERSION "-std=c++11")
@@ -28,3 +29,6 @@ add_subdirectory ("src")
 
 #compile unit tests
 add_subdirectory ("tests")
+
+#generate doc
+add_subdirectory("doc")
