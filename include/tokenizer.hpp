@@ -7,6 +7,6 @@
  */
 
 #include <boost/tokenizer.hpp>
-#define TOKENIZER_DELIMS "\t ",";:,.?!\"'"
+#define TOKENIZER_DELIMS "\t ",";:,.?!\""
 
 

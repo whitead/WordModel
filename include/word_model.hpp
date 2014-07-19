@@ -9,7 +9,7 @@ namespace wordmodel {
    */
   class WordModel {
   public:
-    /** \breif Write a summary to string of the model
+    /** \brief Write a summary to string of the model
      *  
      * Notes: also create a sql version of this
      *
@@ -22,7 +22,7 @@ namespace wordmodel {
      * \return The log-likelihood
      */
     virtual double log_likelihood(std::istream& data) const = 0;
-    /** \breif Perform the expectation step of the EM-algorithm 
+    /** \brief Perform the expectation step of the EM-algorithm 
      *         with the given regularization (if possible)
      *  
      *  \param data The data to fit 
