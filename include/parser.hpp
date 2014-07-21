@@ -61,6 +61,13 @@ namespace wordmodel {
      * \return The number of times a word was observed
      */    
     unsigned int count(std::string const& word_i, std::string const& word_j) const;
+    
+    /** \brief Output summary statistics from the parsing
+     *
+     * \param out The stream where to print the statistics
+     * 
+     */
+    void print_summary(std::ostream& out) const;
 
   private:                   
     unsigned long int word_number;

@@ -3,7 +3,6 @@
 #include <algorithm>
 #include <limits>
 
-
 using namespace std;
 
 wordmodel::Parser::Parser (istream& data) : word_number(0){
@@ -34,6 +33,50 @@ unsigned int wordmodel::Parser::count(string const& word_i, string const& word_j
   return 0;
 }
 
+void wordmodel::Parser::print_summary(ostream& out) const {
+  out << "Word number: " << word_number << endl;
+
+  vector<size_t> top_words;
+  unsigned int top_word_number = 20;
+  size_t i,j,k;
+  
+  for(i = 0; i < word_number; ++i) {
+
+    //the boolean condition there relies on a wrap around of the integer
+    for(j = top_words.size(); j > 0 && counts[i] > counts[top_words[j-1]]; --j);
+
+    //do insertion
+    //grow if possibe
+    if(j == top_words.size() && top_words.size() < top_word_number)  {
+	top_words.push_back(i);
+    }
+    else {// knock element off
+      //keep element if possible
+      if(top_words.size() < top_word_number)
+	top_words.push_back(top_words[top_words.size() - 1]);
+      for(k = top_words.size() - 1; k > j; --k) {
+	top_words[k] = top_words[k - 1];
+      }
+      top_words[j] = i;
+    }
+  }
+
+  //now find out what words correspond to those indices. Very slow process
+  vector<string> top_strings;
+  for(i = 0; i < top_words.size(); ++i)
+    top_strings.push_back("");
+  
+  for(auto kv : word_map)
+    for(i = 0; i < top_words.size(); ++i)
+      if(kv.second == top_words[i])
+	top_strings[i] = kv.first;
+
+  out << "Top words:" << endl;
+  for(i = 0; i < top_words.size(); ++i) {
+    out << "\t <" << top_strings[i] << "> " << counts[top_words[i]] << endl;
+  }
+    
+}
 
 void wordmodel::Parser::parse(istream& data) {
   using namespace boost;

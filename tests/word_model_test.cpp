@@ -7,6 +7,7 @@
 #include <boost/algorithm/string.hpp>
 #include <sstream>
 #include <iostream>
+#include <fstream>
 #include <ctime>
 
 using namespace wordmodel;
@@ -65,6 +66,21 @@ BOOST_AUTO_TEST_CASE( parser_timing )
 
   BOOST_REQUIRE( t.elapsed() / steps < 0.00005);
 
+}
+
+BOOST_AUTO_TEST_CASE( grimm_book )
+{
+  
+  ifstream grimm;
+  grimm.open("grimm.txt");
+  BOOST_REQUIRE( grimm.is_open() );
+
+  timer t;
+  Parser big_parser(grimm);  
+  BOOST_REQUIRE( t.elapsed() < 1);
+
+  BOOST_REQUIRE( big_parser.count(",") == 8906 );
+  
 }
 
 BOOST_AUTO_TEST_SUITE_END()
