@@ -80,8 +80,12 @@ void wordmodel::Parser::parse(istream& data) {
     if(word_map.find(t) == wm_end) {
       index = static_cast<size_t>(word_number);
       word_number++;
+      //check if we have too many words for the pair_counts
+      if(word_number == (size_t) / 2) {
+	cout << "WARNING! Exceeded maximum pair number (" << word_number << "). Hash collisions may occur" << endl;
+      }
       word_map[t] = index;
-      counts.push_back(0);
+      counts.push_back(0);      
 
 #ifdef DEBUG_PARSER
       cout << "New word <" << t
