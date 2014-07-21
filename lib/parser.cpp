@@ -1,6 +1,7 @@
 #include "parser.hpp"
 #include "tokenizer.hpp"
 #include <algorithm>
+#include <limits>
 
 
 using namespace std;
@@ -81,7 +82,7 @@ void wordmodel::Parser::parse(istream& data) {
       index = static_cast<size_t>(word_number);
       word_number++;
       //check if we have too many words for the pair_counts
-      if(word_number == (size_t) / 2) {
+      if(word_number == (numeric_limits<size_t>::max()) / 2) {
 	cout << "WARNING! Exceeded maximum pair number (" << word_number << "). Hash collisions may occur" << endl;
       }
       word_map[t] = index;

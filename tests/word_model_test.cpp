@@ -62,7 +62,6 @@ BOOST_AUTO_TEST_CASE( parser_timing )
 
   timer t;
   Parser growing_parser(parsing_string);    
-  cout << t.elapsed() / steps << endl;
 
   BOOST_REQUIRE( t.elapsed() / steps < 0.00005);
 

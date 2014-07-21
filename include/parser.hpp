@@ -67,8 +67,8 @@ namespace wordmodel {
     std::unordered_map<std::string, size_t> word_map;
     std::vector<unsigned int> counts; 
     std::unordered_map<Pair_Key, unsigned int, Pair_Key_Hasher> pair_counts;
-    //Note: to add further pairs, use the boost hash_combine function
-    //to map the size_t indices of the words.
+    //Note: to add tuples beyond pairs, use the boost hash_combine function
+    //to map the size_t indices of the words. 
   };
 
 }
