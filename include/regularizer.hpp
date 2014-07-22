@@ -1,3 +1,6 @@
+#ifndef REGULARIZER_H
+#define REGULARIZER_H
+
 namespace wordmodel {
   /** \brief Can be used to add regularization to a word-model
    *
@@ -6,3 +9,5 @@ namespace wordmodel {
   };
 
 }
+
+#endif //REGULARIZER_H

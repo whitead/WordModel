@@ -9,6 +9,10 @@ void wordmodel::BrownWordModel::write_summary(ostream& out) const {
 double wordmodel::BrownWordModel::log_likelihood(istream& data) const {
   return 0.;
 }
+void wordmodel::BrownWordModel::train(istream& data) {  
+
+}
+
 double* wordmodel::BrownWordModel::e_step(istream& data, wordmodel::Regularizer const& reg) {  
   return new double[1];
 }
@@ -18,4 +22,8 @@ void wordmodel::BrownWordModel::m_step(istream& data, double* cexp,  wordmodel::
 
 void wordmodel::BrownWordModel::begin_predict(istream& in) {
   
+}
+
+std::string wordmodel::BrownWordModel::get_prediction() const {
+  return "Foo";
 }

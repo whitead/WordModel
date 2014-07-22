@@ -1,3 +1,6 @@
+#ifndef PARSER_H
+#define PARSER_H
+
 #include <iostream>
 #include <vector>
 #include <unordered_map>
@@ -118,9 +121,13 @@ namespace wordmodel {
      * 
      */
     void print_summary(std::ostream& out) const;
+    
+    size_t get_word_number() const {
+      return word_number;
+    };
 
   private:                   
-    unsigned long int word_number;
+    size_t word_number;
     //goes from words to index
     std::unordered_map<std::string, size_t> word_map;
     //count of words
@@ -136,3 +143,5 @@ namespace wordmodel {
   };
 
 }
+
+#endif //PARSER_H

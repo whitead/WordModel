@@ -1,4 +1,5 @@
 #include "brown_word_model.hpp"
+#include "simple_model.hpp"
 #include "parser.hpp"
 #define BOOST_TEST_DYN_LINK 
 #define BOOST_TEST_MODULE WordModel
@@ -14,7 +15,6 @@ using namespace wordmodel;
 using namespace std;
 using namespace boost;
 
-//NOTE: Need to create a test suite for parser and then test a few thing with a fixture
 struct ParserTest {
   ParserTest(){
     stringstream parsing_string("Hello. I\'m a string! Can you count me\? I Can. I'm done!");
@@ -104,6 +104,28 @@ BOOST_AUTO_TEST_CASE( grimm_book )
   BOOST_REQUIRE( t.elapsed() < 1);
 
   BOOST_REQUIRE( big_parser.count(",") == 8906 );
+  
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+struct SimpleModelTest {
+  SimpleModelTest(){
+    stringstream parsing_string("Hello World!");
+    sm.train(parsing_string);    
+  }  
+
+  SimpleModel sm;
+
+};
+
+BOOST_FIXTURE_TEST_SUITE( simple_model_test, SimpleModelTest )
+
+BOOST_AUTO_TEST_CASE( simplemodel_predict )
+{
+  stringstream parsing_string("Hello");
+  sm.begin_predict(parsing_string);
+  BOOST_REQUIRE( sm.get_prediction().compare("World") == 0 );
   
 }
 
