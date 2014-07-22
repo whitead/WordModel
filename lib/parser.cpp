@@ -2,6 +2,7 @@
 #include "tokenizer.hpp"
 #include <algorithm>
 #include <limits>
+#include <stdexcept>
 
 using namespace std;
 
@@ -12,14 +13,40 @@ wordmodel::Parser::Parser (istream& data) : word_number(0){
 wordmodel::Parser::Parser() : word_number(0) {
 }
 
+bool wordmodel::Parser::get_index(string const& word, size_t* index) const {
+  auto it = word_map.find(word);
+  if(it == word_map.end())
+    return false;
+  *index = it->second;
+  return true;
+}
+
+bool wordmodel::Parser::get_word(size_t index, string* word) const {
+  if(index > word_number)
+    return false;
+  *word = words[index];
+  return true;
+}
 
 unsigned int wordmodel::Parser::count(string const& word) const {
   //need to make sure this word exists
-  auto it = word_map.find(word);
-  if(it != word_map.end())
-    return counts[it->second];
+  size_t index;
+  if(get_index(word, &index))
+    return counts[index];
+  return 0;
 }
 
+unsigned int wordmodel::Parser::count(size_t index) const {
+  return counts[index];
+}
+
+unsigned int wordmodel::Parser::count(size_t index_i, size_t index_j) const {
+    auto it = pair_counts.find(wordmodel::Pair_Key(index_i, index_j));  
+    if(it != pair_counts.end())
+      return it->second;
+    return 0;
+
+}
 unsigned int wordmodel::Parser::count(string const& word_i, string const& word_j) const {
   //need to make sure this word exists
   auto it1 = word_map.find(word_i);
@@ -32,6 +59,18 @@ unsigned int wordmodel::Parser::count(string const& word_i, string const& word_j
   }
   return 0;
 }
+
+const vector<size_t>& wordmodel::Parser::iterate_pairs(size_t index) const {
+  return nonzero_pairs[index];
+}
+
+const vector<size_t>& wordmodel::Parser:: iterate_pairs(string word) const {
+  size_t index;
+  if(get_index(word, &index))
+    return nonzero_pairs[index];
+  throw std::out_of_range("Invalid word");
+}
+
 
 void wordmodel::Parser::print_summary(ostream& out) const {
   out << "Word number: " << word_number << endl;
@@ -61,19 +100,9 @@ void wordmodel::Parser::print_summary(ostream& out) const {
     }
   }
 
-  //now find out what words correspond to those indices. Very slow process
-  vector<string> top_strings;
-  for(i = 0; i < top_words.size(); ++i)
-    top_strings.push_back("");
-  
-  for(auto kv : word_map)
-    for(i = 0; i < top_words.size(); ++i)
-      if(kv.second == top_words[i])
-	top_strings[i] = kv.first;
-
   out << "Top words:" << endl;
   for(i = 0; i < top_words.size(); ++i) {
-    out << "\t <" << top_strings[i] << "> " << counts[top_words[i]] << endl;
+    out << "\t <" << words[top_words[i]] << "> " << counts[top_words[i]] << endl;
   }
     
 }
@@ -94,11 +123,13 @@ void wordmodel::Parser::parse(istream& data) {
 
   //treat the first token out of the loop
   auto tok_it = tok.begin();
-  index = static_cast<size_t>(word_number);
+  index = static_cast<size_t>(word_number);  
   word_number++;
   word_map[(*tok_it)] = index;
-  counts.push_back(1);  
-  auto last_t = (*tok_it);
+  words.push_back(*(tok_it));  
+  counts.push_back(1);
+  nonzero_pairs.push_back(vector<size_t>(0));
+  size_t last_index = index;
 
 #ifdef DEBUG_PARSER    
   cout << "Token: <" << *tok_it
@@ -122,14 +153,18 @@ void wordmodel::Parser::parse(istream& data) {
 
     //check if the word is new
     if(word_map.find(t) == wm_end) {
-      index = static_cast<size_t>(word_number);
+      index = static_cast<size_t>(word_number);      
       word_number++;
+
       //check if we have too many words for the pair_counts
       if(word_number == (numeric_limits<size_t>::max()) / 2) {
 	cout << "WARNING! Exceeded maximum pair number (" << word_number << "). Hash collisions may occur" << endl;
       }
+
       word_map[t] = index;
+      words.push_back(t);
       counts.push_back(0);      
+      nonzero_pairs.push_back(vector<size_t>(0));
 
 #ifdef DEBUG_PARSER
       cout << "New word <" << t
@@ -144,7 +179,7 @@ void wordmodel::Parser::parse(istream& data) {
     counts[index]++;
    
     //check for existance in pair_counts
-    key = wordmodel::Pair_Key(word_map[last_t], index);
+    key = wordmodel::Pair_Key(last_index, index);
     pair_it = pair_counts.find(key);
     //modify them
     if(pair_it == pair_it_end)
@@ -152,15 +187,17 @@ void wordmodel::Parser::parse(istream& data) {
     else
       pair_it->second += 1;        
 
+    //add to nonzero_pair list
+    nonzero_pairs[last_index].push_back(index);
+
 #ifdef DEBUG_PARSER
-    cout << "Tokens: <" << t << "> <" << last_t << ">"
+    cout << "Tokens: <" << t << "> <" << words[last_index] << ">"
 	 << " Index: " << index
 	 <<" Counts: " << counts[index]
       	 <<" Pair: " << pair_counts[key]
 	 << endl;
 #endif //DEBUG_PARSER
     
-    last_t = t;
-
+    last_index = index;
   }
 }

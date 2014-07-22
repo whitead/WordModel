@@ -50,6 +50,18 @@ BOOST_AUTO_TEST_CASE( parser_pair_counts )
   BOOST_REQUIRE( parser.count("a", "string") == 1 );
   BOOST_REQUIRE( parser.count(".", "I\'m") == 2 );
   BOOST_REQUIRE( parser.count("4", "5") == 0 );
+  
+  size_t index;
+  BOOST_REQUIRE( parser.get_index("I\'m", &index) );
+  size_t i;
+  auto vec = parser.iterate_pairs(".");
+  for(auto ii : vec) {
+    if(ii == index) {
+      i = ii;
+      break;
+    }
+  }
+  BOOST_REQUIRE(i == index);
 }
 
 BOOST_AUTO_TEST_CASE( parser_timing )
@@ -67,6 +79,18 @@ BOOST_AUTO_TEST_CASE( parser_timing )
   BOOST_REQUIRE( t.elapsed() / steps < 0.00005);
 
 }
+
+BOOST_AUTO_TEST_CASE( parser_index_word_conversion )
+{
+  string word;
+  BOOST_REQUIRE( parser.get_word(0, &word) );
+  size_t index;
+  BOOST_REQUIRE( parser.get_index(word, &index) );  
+  BOOST_REQUIRE( index == 0);  
+  BOOST_REQUIRE( !parser.get_index("FAFAFSXFAFA", &index) );  
+  BOOST_REQUIRE( !parser.get_word(548434343, &word) );  
+}
+
 
 BOOST_AUTO_TEST_CASE( grimm_book )
 {
