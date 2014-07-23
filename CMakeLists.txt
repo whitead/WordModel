@@ -13,6 +13,7 @@ add_definitions (${CXX_STD_VERSION})
 
 #set-up directories
 include_directories ("${PROJECT_SOURCE_DIR}/include")
+include_directories ("${PROJECT_SOURCE_DIR}/src")
 
 
 #Detect boost
