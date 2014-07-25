@@ -1,46 +1,78 @@
+#include <cstdlib>
 #include <iostream>
-#include <array>
+#include <thread>
+#include <chrono>
+#include <locale>
+#include <termios.h>
 #include <boost/asio.hpp>
+#include "packet.hpp"
+#include "service_client.hpp"
+
+
 
 using boost::asio::ip::tcp;
-using boost::asio;
 
 int main(int argc, char* argv[]) {
 
-  try
-  {
-    if (argc != 2)
-    {
-      std::cerr << "Usage: stdin_tcp <host> <port>" << std::endl;
-      return 1;
+  try  {
+    if (argc != 3)
+      {
+	std::cerr << "Usage: stdin_tcp <host> <port or service>" << std::endl;
+	return 1;
+      }
+
+    boost::asio::io_service io_service;
+
+    tcp::resolver resolver(io_service);
+    auto endpoint_iterator = resolver.resolve({ argv[1], argv[2] });
+    ServiceClient client(io_service, endpoint_iterator);
+
+    std::thread t([&io_service](){ io_service.run(); });
+
+
+    // Black magic to prevent Linux from buffering keystrokes.
+    struct termios tios;
+    tcgetattr(STDIN_FILENO, &tios);
+    tios.c_lflag &= ~ICANON;
+    tcsetattr(STDIN_FILENO, TCSANOW, &tios);
+
+
+    //we read character by character, sending packets when a space 
+    //is reached
+    char word[Packet::max_body_length + 1];
+    char c;
+    size_t read_count = 0;
+    while (!std::cin.eof()) {
+      c = std::cin.get();
+      if(std::isspace(c)) {
+	if(read_count > 0) {
+	  //ok, non-empty word is complete. Send packet
+	  word[read_count] = '\0';
+	  Packet p;
+	  p.body_length(read_count + 1);
+	  std::memcpy(p.body(), word, p.body_length());
+	  p.encode_header();
+	  client.write(p);
+	  read_count = 0;
+	}
+      } else {
+	//clear last prediction
+	std::cout << "\033[J";
+	word[read_count] = c;
+	read_count++;
+      }
     }
 
+    client.close();
+    t.join();    
+    
 
-    //all asio programs get one
-    io_service io_service;
     
-    //build a resolver and give it host and portname
-    tcp::resolver resolver(io_service);
-    auto endpoint_it = resolver.resolve(argv[1], argv[2]);
-    
-    //connect the io_service socket with the endpoint
-    tcp::socket socket(io_service);
-    connect(socket, endpoint_iterator);
-    
-    while(true)
-      {
-	std::array<char, 128> buf;
-	boost::system::error_code error;
-	
-	size_t len = socket.read_some(boost::asio::buffer(buf), error);
-	
-	if (error == boost::asio::error::eof)
-	  break; // Connection closed cleanly by peer.
-	else if (error)
-	  throw boost::system::system_error(error); // Some other error.
-	
-	std::cout.write(buf.data(), len);
-      }
+  } catch (std::exception& e)  {
+    std::cout << "Exception: " << e.what() << std::endl;
+  }
+  
+  return 0;
   
 }
 

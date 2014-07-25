@@ -17,7 +17,7 @@ include_directories ("${PROJECT_SOURCE_DIR}/src")
 
 
 #Detect boost
-find_package (Boost 1.36 COMPONENTS system filesystem unit_test_framework REQUIRED)  
+find_package (Boost 1.36 COMPONENTS thread system filesystem unit_test_framework REQUIRED)  
 include_directories (${Boost_INCLUDE_DIRS})
 
 

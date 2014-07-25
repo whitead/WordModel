@@ -1,3 +1,6 @@
+#ifndef PACKET_H
+#define PACKET_H
+
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -7,6 +10,7 @@ class Packet
 public:
 
   enum PACKET_TYPE {TRAIN, PREDICT, PREDICTION};
+  const char* PACKET_STRINGS[3] = {"Train", "Predict", "Prediction"};
   enum { header_length = 4 + 1 };
   enum { max_body_length = 512 };
 
@@ -19,6 +23,12 @@ public:
   {
     return type_;
   }
+
+  const char* type_string() const
+  {
+    return PACKET_STRINGS[type_];
+  }
+
 
   void type(PACKET_TYPE type)
   {
@@ -89,3 +99,5 @@ private:
   PACKET_TYPE type_;
 };
 
+
+#endif //PACKET_H
