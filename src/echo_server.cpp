@@ -95,7 +95,7 @@ int main(int argc, char* argv[]) {
   try  {
     if (argc != 2)
       {
-	std::cerr << "Usage: stdin_tcp <port or service>" << std::endl;
+	std::cerr << "Usage: echo_server <port or service>" << std::endl;
 	return 1;
       }
 

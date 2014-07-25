@@ -47,9 +47,12 @@ int main(int argc, char* argv[]) {
       if(std::isspace(c)) {
 	if(read_count > 0) {
 	  //ok, non-empty word is complete. Send packet
-	  word[read_count] = '\0';
+	  word[read_count++] = c; //add space, so tokenizer on the other side treats it correctly
+	  
+	  word[read_count++] = '\0';
 	  Packet p;
-	  p.body_length(read_count + 1);
+	  p.type(Packet::PACKET_TYPE::PREDICT);
+	  p.body_length(read_count);
 	  std::memcpy(p.body(), word, p.body_length());
 	  p.encode_header();
 	  client.write(p);

@@ -128,6 +128,8 @@ namespace wordmodel {
 
   private:                   
     size_t word_number;
+    //This is the last index from a previous train
+    size_t last_index_;
     //goes from words to index
     std::unordered_map<std::string, size_t> word_map;
     //count of words
@@ -139,7 +141,7 @@ namespace wordmodel {
     //pair counts
     std::unordered_map<Pair_Key, unsigned int, Pair_Key_Hasher> pair_counts;
     //Note: to add tuples beyond pairs, use the boost hash_combine function
-    //to map the size_t indices of the words. 
+    //to map the size_t indices of the words.     
   };
 
 }

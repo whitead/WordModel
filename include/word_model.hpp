@@ -26,15 +26,14 @@ namespace wordmodel {
      *  \param reg The regularizer
      */
     virtual void train(std::istream& data) = 0;
-    /** \brief Perform the maximization step of the EM-algorithm
-     *         with the given regularization (if possible)
-     * 
-     *  \param data The data to fit
-     *  \param cexp The class expectations, usually from e_step
-     */ 
+
 
     /** \brief Set an input stream which is used for prediction. Prediction
-     *  can be obtained with the >> method
+     *  can be obtained with get_prediction() method.
+     *
+     * This will simply set the input stream for prediction. The function
+     * returns immediately and will consume the stream when get_prediction()
+     * is called. 
      * 
      * \param in The stream used to predict the next token
      */ 
@@ -44,7 +43,7 @@ namespace wordmodel {
      *
      *
      */
-    virtual std::string get_prediction() const = 0;
+    virtual std::string get_prediction() = 0;
 
   };
 

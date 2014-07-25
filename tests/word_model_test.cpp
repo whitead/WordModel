@@ -1,4 +1,3 @@
-#include "brown_word_model.hpp"
 #include "simple_model.hpp"
 #include "parser.hpp"
 #define BOOST_TEST_DYN_LINK 
@@ -131,10 +130,3 @@ BOOST_AUTO_TEST_CASE( simplemodel_predict )
 
 BOOST_AUTO_TEST_SUITE_END()
 
-BOOST_AUTO_TEST_CASE( brown_construction )
-{
-  BrownWordModel model;
-  stringstream summary_string;
-  model.write_summary(summary_string);
-  BOOST_REQUIRE( starts_with(summary_string.str(), "Brown Word Model") );
-}
