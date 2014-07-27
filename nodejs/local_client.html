@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Word Model Socket Interface</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body { font: 13px Helvetica, Arial; }
+      div { padding: 3px; width: 100%; }      
+      #prediction{ padding:5px 10px;}
+      div input { background:#DDD; border: 2px; padding: 10px; width: 75%; margin-right: .5%; }
+      #tdata { list-style-type: none; margin: 0; padding: 0; }
+      #tdata li { padding: 5px 10px; }
+      #tdata li:nth-child(odd) { background: #eee; }
+    </style>
+
+  </head>
+  <body>
+    <div>      
+      <input id="text" autocomplete="off"/> <p id="prediction"></p>
+    </div>
+    <div>
+      <input id="training" autocomplete="off"/> <button id="train_button">Train</button>
+    </div>
+    <ul id="tdata">      
+    </ul>
+  </body>
+
+<script src="https://cdn.socket.io/socket.io-1.0.6.js"></script>
+<script src="http://code.jquery.com/jquery-1.11.1.js"></script>
+<script>
+  var socket = io('http://localhost:80');
+  socket.on('prediction', function (data) {
+    console.log(data);
+    $('#prediction').text(data);
+  });
+  $('#text').keyup(function() {
+    $('#prediction').text('');
+    socket.emit('predict', $('#text').val());
+  });
+  function send_train() {
+    var data = $('#training').val();
+    $('#tdata').append($('<li>').text(data));
+    socket.emit('train', data);
+    return false;
+  }
+  $('#train_button').click(send_train);
+  $('#training').keypress(function(e) {
+    if(e.which == 13) {
+      send_train();
+    }
+  });
+    
+  
+</script>
+
+</html>

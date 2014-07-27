@@ -43,7 +43,6 @@ private:
     switch(read_packet_.type()){
     case Packet::PACKET_TYPE::PREDICT:
       send_prediction();
-      add_to_train();
       break;
     case Packet::PACKET_TYPE::TRAIN:
       add_to_train();
@@ -133,7 +132,7 @@ private:
   void add_to_train() { 
     train_stream_ << read_packet_.body();
     train_packets_++;
-    if(train_packets_ > 10) {
+    if(train_packets_ > 10 || read_packet_.length() > 15) {
       wm_.train(train_stream_);
       train_packets_ = 0;
     }

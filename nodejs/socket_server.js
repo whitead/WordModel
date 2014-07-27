@@ -8,12 +8,22 @@ if(process.argv.length < 4) {
 var model_host = process.argv[2];
 var model_port = +process.argv[3];
 
-var some_text = "Hello Andrew Hello Andrew Hello Andrew Hello Andrew Hello Andrew";
+var io = require('socket.io').listen(80);
 
-var model = new ModelAdaptor(model_host, model_port, function(prediction) {
-    sys.log("prediction: " + prediction);
+io.sockets.on('connection', function (socket) {
+    var ma = new ModelAdaptor(model_host, model_port, function(prediction) {
+	socket.emit('prediction', prediction);
+    });
+    socket.on('predict', function (token) { 
+	console.log('predict');
+	ma.get_prediction(token);
+    });
+    socket.on('train', function (token) { 
+	console.log('training');
+	ma.train(token);
+    });
+    socket.on('disconnect', function () { 
+	ma.close();
+    });
 });
 
-some_text.split(' ').map(function(token) { model.get_prediction(token + ' ')});
-some_text.split(' ').map(function(token) { model.get_prediction(token + ' ')});
-//model.close();

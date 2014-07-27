@@ -30,6 +30,12 @@ ModelAdaptor.prototype.get_prediction = function(str) {
     this.socket.write(p);
 };
 
+ModelAdaptor.prototype.train = function(str) {
+    var p = packet.encode_packet(packet.PACKET_TYPE.TRAIN, str, packet.create_buffer());
+    this.socket.write(p);
+};
+
+
 ModelAdaptor.prototype.close = function() {
     this.socket.unref();
 };
