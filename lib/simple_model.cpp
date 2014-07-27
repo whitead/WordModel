@@ -2,7 +2,15 @@
 
 using namespace std;
 
-wordmodel::SimpleModel::SimpleModel() : prediction_tok_(NULL) {}
+wordmodel::SimpleModel::SimpleModel() {
+  setup_predict(input_stream_);
+}
+
+wordmodel::SimpleModel::SimpleModel(SimpleModel&& sm) :
+  parser_(std::move(sm.parser_)),
+  word_modes_(std::move(sm.word_modes_)) {
+  setup_predict(input_stream_);
+}
 
 wordmodel::SimpleModel::~SimpleModel() {
   if(prediction_tok_ != NULL)
@@ -13,7 +21,27 @@ void wordmodel::SimpleModel::write_summary(ostream& out) const {
   out << "Simple Word Model" << endl;
 }
 
-void wordmodel::SimpleModel::train(istream& data) {  
+void wordmodel::SimpleModel::putc(char c) {
+  input_stream_ << c;
+}
+
+const std::string& wordmodel::SimpleModel::get_prediction(int* prediction_id) {
+
+  //train
+  int pos = input_stream_.tellg();
+  do_train(input_stream_);
+  input_stream_.seekg(pos);
+  
+  //just eat up the whole stream
+  for(auto t: *prediction_tok_) {   
+    prediction_ = word_modes_[t];
+  }  
+    
+  return prediction_;
+}
+
+
+void wordmodel::SimpleModel::do_train(istream& data) {  
   //parse
   parser_.parse(data);
   //build word_modes_
@@ -32,7 +60,7 @@ void wordmodel::SimpleModel::train(istream& data) {
   }
 }
 
-void wordmodel::SimpleModel::begin_predict(istream& in) {
+void wordmodel::SimpleModel::setup_predict(istream& in) {
  
   using namespace boost;
   using namespace std;
@@ -43,18 +71,6 @@ void wordmodel::SimpleModel::begin_predict(istream& in) {
 
     //build a tokenizer
   char_separator<char> sep(TOKENIZER_DELIMS);
-  prediction_tok_ = new tokenizer<char_separator<char>, istreambuf_iterator<char> >(stream_iter,  end_of_stream, sep);
+  prediction_tok_ =  new boost::tokenizer<boost::char_separator<char>, std::istreambuf_iterator<char> >(stream_iter,  end_of_stream, sep);
 
-}
-
-std::string wordmodel::SimpleModel::get_prediction() {
-
-  if(prediction_tok_ == NULL)
-    return prediction_;
-
-  //just eat up the whole stream
-  for(auto t: *prediction_tok_) {
-    prediction_ = word_modes_[t];
-  }  
-  return prediction_;
 }

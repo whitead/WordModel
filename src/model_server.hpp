@@ -23,7 +23,6 @@ public:
   ModelServer(M wm, tcp::socket socket) :
     wm_(std::move(wm)), socket_(std::move(socket)),
     train_packets_(0){
-    wm_.begin_predict(predict_stream_);
   }
 
   //This has to be here because shared_from_this can't
@@ -53,9 +52,11 @@ private:
   //send a prediction given a packet of text
   void send_prediction() {
     //first send the prediction text
-    predict_stream_ << read_packet_.body();
+    const char* body = read_packet_.body();
+    for(int i = 0; i < read_packet_.body_length(); i++)
+      wm_.putc(body[i]);
     //retrieve the prediction
-    std::string prediction = wm_.get_prediction();    
+    std::string prediction = wm_.get_prediction();
     //construct packet if valid prediction
     if(prediction.size() > 0) {
       Packet p;
@@ -130,19 +131,11 @@ private:
 
 //add the text to training data
   void add_to_train() { 
-    train_stream_ << read_packet_.body();
-    train_packets_++;
-    if(train_packets_ > 10 || read_packet_.length() > 15) {
-      wm_.train(train_stream_);
-      train_packets_ = 0;
-    }
   }
 
   M wm_;
   tcp::socket socket_;
   Packet read_packet_;
-  std::stringstream predict_stream_;
-  std::stringstream train_stream_;
   int train_packets_;
   Packet_queue write_packets_;
   

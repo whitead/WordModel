@@ -109,21 +109,25 @@ BOOST_AUTO_TEST_CASE( grimm_book )
 BOOST_AUTO_TEST_SUITE_END()
 
 struct SimpleModelTest {
-  SimpleModelTest(){
-    stringstream parsing_string("Hello World!");
-    sm.train(parsing_string);    
-  }  
-
   SimpleModel sm;
 
 };
 
 BOOST_FIXTURE_TEST_SUITE( simple_model_test, SimpleModelTest )
 
+BOOST_AUTO_TEST_CASE( simplemodel_construction )
+{
+  //test out move constructor
+  SimpleModel sm;
+  SimpleModel sm2 = SimpleModel(std::move(sm));
+}
+
+
 BOOST_AUTO_TEST_CASE( simplemodel_predict )
 {
-  stringstream parsing_string("Hello");
-  sm.begin_predict(parsing_string);
+  string s("Hello World Hello");
+  for(char& c: s)
+    sm.putc(c);
   BOOST_REQUIRE( sm.get_prediction().compare("World") == 0 );
   
 }

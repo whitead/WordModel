@@ -20,30 +20,47 @@ namespace wordmodel {
      */
     virtual void write_summary(std::ostream& out) const = 0;
 
-    /** \brief Train the model
-     *  
-     *  \param data The data to fit 
-     *  \param reg The regularizer
-     */
-    virtual void train(std::istream& data) = 0;
-
-
-    /** \brief Set an input stream which is used for prediction. Prediction
-     *  can be obtained with get_prediction() method.
+    /** \brief Mark a prediction as correct
      *
-     * This will simply set the input stream for prediction. The function
-     * returns immediately and will consume the stream when get_prediction()
-     * is called. 
-     * 
+     * The prediction id comes from calling the predict method first. 
+     *  
+     *  \param prediction_id  Then prediction that was correct
+     */
+    virtual void reinforce(int prediction_id) {};
+
+    /** \brief Send a character to the model
+     *
+     * The will add a character to the model, which is used
+     * to prepare the model for a get_prediction() call. Call
+     * clear_prediction() to discard all previous characters passed.
+     * This will also train the model online.
+     *   
      * \param in The stream used to predict the next token
      */ 
-    virtual void begin_predict(std::istream& in) = 0;
-
-    /** \breif Return the currently predicted word
-     *
+    virtual void putc(char c) = 0;
+    
+    /** \brief Discard all characters passed with putc. 
      *
      */
-    virtual std::string get_prediction() = 0;
+    virtual void clear_prediction() {}
+
+    /** \breif Return a predicted string
+     * 
+     * The passed integer will be set to  a prediction_id which can be used
+     * for reinforcement training with a call to reinforce()
+     * 
+     * \param prediction_id corresponding to this prediction
+     *
+     * \return Prediction
+     */
+    virtual const std::string& get_prediction(int* prediction_id) = 0;
+
+    /** \breif Return a predicted string
+     * 
+     *
+     * \return Prediction
+     */
+    const std::string& get_prediction() {return get_prediction(NULL);}
 
   };
 

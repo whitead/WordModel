@@ -7,22 +7,31 @@
 #include <ostream>
 #include <unordered_map>
 #include <istream>
+#include <sstream>
 
 namespace wordmodel {
   /** \brief A simple word model that just chooses the most frequently
    * occuring pairs
    *
    */
-  class SimpleModel : WordModel {
+  class SimpleModel : public WordModel {
   public: 
     SimpleModel();
+    SimpleModel(SimpleModel&&);
+    SimpleModel(SimpleModel&) = delete; //disallow copy constructor
+    SimpleModel& operator=(const SimpleModel&) = delete; //disallow copying
+    SimpleModel& operator=(const SimpleModel&&) = delete; 
     ~SimpleModel();
     void write_summary(std::ostream& out) const override;
-    void train(std::istream& data) override;
-    void begin_predict(std::istream& in) override;
-    std::string get_prediction() override;
+    void putc(char c) override;
+    const std::string& get_prediction(int* prediction_id) override;
+    using WordModel::get_prediction;
   private:
+    void do_train(std::istream& data);
+    void setup_predict(std::istream& in);
+
     Parser parser_;
+    std::stringstream input_stream_;
     std::unordered_map<std::string, std::string> word_modes_;
     std::string prediction_;
     boost::tokenizer<boost::char_separator<char>, std::istreambuf_iterator<char> >* prediction_tok_;
