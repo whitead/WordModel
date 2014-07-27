@@ -58,6 +58,7 @@ private:
           if (!ec)
           {
 	    std::cout << "---------------------" << std::endl;
+	    std::cout << "Length: " << read_packet_.body_length() << std::endl;
 	    std::cout << read_packet_.type_string() << std::endl;
 	    std::cout << read_packet_.body() << std::endl;
 	    std::cout << "---------------------" << std::endl;

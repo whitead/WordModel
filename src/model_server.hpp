@@ -71,8 +71,7 @@ private:
       if(!b_writing) {
 	write();
       }    
-
-    }    
+    }     
   }
 
   //flush write_packets_
@@ -92,6 +91,14 @@ private:
 	}
       });
   }
+
+  // a write which blocks until complete
+  void blocking_write(Packet p) {
+    boost::asio::write(socket_,
+		       boost::asio::buffer(p.data(),
+					   p.length()));
+  }
+
 
   void read_header() {
     //This line of code forces a reference
