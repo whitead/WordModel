@@ -108,6 +108,8 @@ BOOST_AUTO_TEST_CASE( grimm_book )
 
 BOOST_AUTO_TEST_SUITE_END()
 
+/**************************/
+
 struct SimpleModelTest {
   SimpleModel sm;
 
@@ -130,6 +132,26 @@ BOOST_AUTO_TEST_CASE( simplemodel_predict )
     sm.putc(c);
   BOOST_REQUIRE( sm.get_prediction().compare("World") == 0 );
   
+}
+
+BOOST_AUTO_TEST_SUITE_END()
+
+/**************************/
+
+struct BoundedCTModelTest {
+  BoundedCTModel bcm; 
+  BoundedCTModelTest() : bcm(5) {
+
+  }
+
+};
+
+BOOST_FIXTURE_TEST_SUITE( bounded_tree_test, BoundedCTModelTest )
+
+BOOST_AUTO_TEST_CASE( bounded_tree_test ) {
+  string s("Hello World Hello");
+  bcm.putc(s)
+  BOOST_REQUIRE( sm.get_prediction().compare("World") == 0 );
 }
 
 BOOST_AUTO_TEST_SUITE_END()
