@@ -1,5 +1,6 @@
 #include "simple_model.hpp"
 #include "parser.hpp"
+#include "bounded_context_tree_model.hpp"
 #define BOOST_TEST_DYN_LINK 
 #define BOOST_TEST_MODULE WordModel
 #include <boost/test/unit_test.hpp>
@@ -90,7 +91,7 @@ BOOST_AUTO_TEST_CASE( parser_index_word_conversion )
   BOOST_REQUIRE( !parser.get_word(548434343, &word) );  
 }
 
-
+/*
 BOOST_AUTO_TEST_CASE( grimm_book )
 {
   
@@ -105,6 +106,7 @@ BOOST_AUTO_TEST_CASE( grimm_book )
   BOOST_REQUIRE( big_parser.count(",") == 8906 );
   
 }
+*/
 
 BOOST_AUTO_TEST_SUITE_END()
 
@@ -148,11 +150,64 @@ struct BoundedCTModelTest {
 
 BOOST_FIXTURE_TEST_SUITE( bounded_tree_test, BoundedCTModelTest )
 
-BOOST_AUTO_TEST_CASE( bounded_tree_test ) {
-  string s("Hello World Hello");
-  bcm.putc(s)
-  BOOST_REQUIRE( sm.get_prediction().compare("World") == 0 );
+/*
+BOOST_AUTO_TEST_CASE( bounded_tree_test_edge_cases ) {
+
+  BOOST_REQUIRE( bcm.get_prediction().compare("") == 0 );
+  bcm.prediction_result(-5, true);
+  bcm.prediction_result(49304393, true);
+
+  string s(" !!! ! ! ! !  %$5645 $#!$!!$$!  R$#$#3 \n $#! ");
+  for(char& c: s)
+    bcm.putc(c);
+  std::cout << bcm.get_prediction() << std::endl;
+  BOOST_REQUIRE( bcm.get_prediction().compare("!") == 0 );
 }
+*/
+
+BOOST_AUTO_TEST_CASE( bounded_tree_test_easy ) {
+
+  ofstream graph_out;
+  graph_out.open("hello_world.dot");
+  
+  //write tree
+  bcm.write_summary(graph_out);
+  
+  for(int i = 0; i < 2; i++) {
+    string s("Hello ");
+    for(char& c: s)
+      bcm.putc(c);
+    std::cout << bcm.get_prediction() << std::endl;
+    bcm.write_summary(graph_out);
+
+    s = "World ";
+    for(char& c: s)
+      bcm.putc(c);
+    std::cout << bcm.get_prediction() << std::endl;
+    bcm.write_summary(graph_out);
+
+  }
+
+  BOOST_REQUIRE( bcm.get_prediction().compare("World") == 0 );
+}
+
+BOOST_AUTO_TEST_CASE( bounded_tree_grimm ) {
+
+  ifstream grimm;
+  grimm.open("grimm.txt");
+  BOOST_REQUIRE( grimm.is_open() );
+
+  timer t;
+  int length = 10000;
+  while(grimm.good() && length > 0) {
+    bcm.putc(grimm.get());
+    length--;
+  }
+  std::cout << t.elapsed() << std::endl;
+  BOOST_REQUIRE( t.elapsed() < 1);
+}
+
+
 
 BOOST_AUTO_TEST_SUITE_END()
 

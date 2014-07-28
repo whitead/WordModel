@@ -20,13 +20,14 @@ namespace wordmodel {
      */
     virtual void write_summary(std::ostream& out) const = 0;
 
-    /** \brief Mark a prediction as correct
+    /** \brief Send if a prediction was used or not
      *
      * The prediction id comes from calling the predict method first. 
      *  
-     *  \param prediction_id  Then prediction that was correct
+     *  \param prediction_id  Then prediction id
+     *  \param outcome True if prediction was used
      */
-    virtual void reinforce(int prediction_id) {};
+    virtual void prediction_result(int prediction_id, bool outcome) {};
 
     /** \brief Send a character to the model
      *

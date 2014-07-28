@@ -55,14 +55,14 @@ namespace wordmodel {
     template<typename A>
     void predict(A data_frag, size_t length, int* context_id) {
 
-      Context con = activate_context(context_id);
+      Context* con = activate_context(context_id);
 
       //make sure context is big enough
       //add 1 to make room for empty node/root node
-      if(con.path.size() < length + 1)
-	con.path.resize(length);      
+      if(con->path.size() < length + 1)
+	con->path.resize(length);      
       
-      visitor->start_predict(con.data);
+      visitor->start_predict(con->data);
 
       Vertex v = root_;
       V_iter target, end;
@@ -72,9 +72,9 @@ namespace wordmodel {
 
 	//treat the ith vertex
 	//store the path we're taking
-	con.path[i].id = v.id;
+	con->path[i].id = v.id;
 	//call visitor on vertex
-	visitor->push_predict(v.id, i, con.data);
+	visitor->push_predict(v.id, i, con->data);
 
 	if(i == length)
 	  break;
@@ -98,7 +98,7 @@ namespace wordmodel {
 	}
 
 	if(terminate) {
-	  con.leaf = v;
+	  con->leaf = v;
 	  // Now we process the additions we'd like to make
 	  // if our prediction fails
 	  for(int j = i+1; j < length+1; ++j) {
@@ -107,8 +107,8 @@ namespace wordmodel {
 	    if(it == data_map_.end()) {
 	      data_map_[c] = token_number_++;
 	    }
-	    con.path[j].token = data_map_[c];
-	    con.addition_size++;
+	    con->path[j].token = data_map_[c];
+	    con->addition_size++;
 	    
 	    //get new token
 	    if(j < length)
@@ -122,31 +122,31 @@ namespace wordmodel {
     void regret(int context_id, int depth) {
       
       //get context
-      con = contexts[context_id];      
+      Context* con = &contexts[context_id];      
       
       //move down to the new vertices 
       int index = 0;
-      for(;con.path[index] != con.leaf; index++) {
-	visitor->push_regret(con.path[index].id, 
+      for(;con->path[index] != con->leaf; index++) {
+	visitor->push_regret(con->path[index].id, 
 			     index,
-			     con.data);			     
+			     con->data);			     
       }
 
       //now push the leaf
       index++;
-      visitor->push_regret(con.path[index].id, 
+      visitor->push_regret(con->path[index].id, 
 			   index,
-			   con.data);			     
+			   con->data);			     
       
 
-      Vertex last = con.leaf;
+      Vertex last = con->leaf;
 	
       //add nodes
       for(int i = index; i < depth; ++i) {
 	Vertex v = boost::add_vertex(tree_);	  
 	v.id = vertex_number_++;
-	v.token = con.path[i].token;
-	visitor->add_node(v.id, index, con.data);
+	v.token = con->path[i].token;
+	visitor->add_node(v.id, index, con->data);
 	boost::add_edge(last, v, tree_);
 	last = v;
       }
@@ -176,7 +176,7 @@ namespace wordmodel {
       }
     }
 
-    Context& activate_context(int* context_id) {
+    Context* activate_context(int* context_id) {
       //get a free context_id
       if(inactive_ids_.empty())
 	flush_ids_();
@@ -185,9 +185,9 @@ namespace wordmodel {
       active_ids_.push(*context_id);
 
       //initialize context
-      con = contexts[*context_id];
-      con.addition_size = 0;
-      con.leaf = root_;
+      Context* con = &contexts[*context_id];
+      con->addition_size = 0;
+      con->leaf = root_;
       return con;
     }
     
