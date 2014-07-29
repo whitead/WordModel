@@ -18,7 +18,7 @@ namespace wordmodel {
      *
      * \param out Output stream to write summary
      */
-    virtual void write_summary(std::ostream& out) const = 0;
+    virtual void write_summary(std::ostream& out) = 0;
 
     /** \brief Send if a prediction was used or not
      *

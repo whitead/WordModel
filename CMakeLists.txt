@@ -7,7 +7,8 @@ set (WordModel_VERSION_MINOR 1)
 set (WordModel_DESCRIPTION "A C++ syntax and topic word model")
 
 #compilation flags
-set (CXX_STD_VERSION "-std=c++11 -g")
+#set (CXX_STD_VERSION "-std=c++11 -g")
+set (CXX_STD_VERSION "-std=c++11 -O0 -g")
 add_definitions (${CXX_STD_VERSION})
 
 

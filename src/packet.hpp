@@ -9,8 +9,8 @@ class Packet
 {
 public:
 
-  enum PACKET_TYPE {TRAIN, PREDICT, PREDICTION};
-  const char* PACKET_STRINGS[3] = {"Train", "Predict", "Prediction"};
+  enum PACKET_TYPE {TRAIN, PREDICT, PREDICTION, SUMMARY};
+  const char* PACKET_STRINGS[4] = {"Train", "Predict", "Prediction", "Summary"};
   enum { header_length = 4 + 1 };
   enum { max_body_length = 512 };
 

@@ -4,6 +4,7 @@
 #include <boost/asio.hpp>
 #include <deque>
 #include <utility>
+#include <sstream>
 #include "packet.hpp"
 #include "word_model.hpp"
 
@@ -46,6 +47,10 @@ private:
     case Packet::PACKET_TYPE::TRAIN:
       add_to_train();
       break;
+    case Packet::PACKET_TYPE::SUMMARY:
+      send_summary();
+      break;
+
     }
   }
     
@@ -73,6 +78,33 @@ private:
       }    
     }     
   }
+
+  //send a summary of the model
+  void send_summary() {
+    //get summary
+    std::stringstream ss;
+    int i;
+    wm_.write_summary(ss);
+    bool b_writing = !write_packets_.empty();    
+    while(ss.good()) {
+      Packet p;
+      char* body = p.body();
+      p.type(Packet::SUMMARY);
+      for(i = 0; ss.good() && i < Packet::max_body_length; i++)
+	body[i] = ss.get();
+
+      p.body_length(i);
+      p.encode_header();
+      write_packets_.emplace_back(p);
+    }
+
+    //write the packets
+    if(!b_writing) {
+      write();
+    }    
+  }
+  
+
 
   //flush write_packets_
   void write() {

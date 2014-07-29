@@ -19,8 +19,11 @@
       <input id="text" autocomplete="off"/> <p id="prediction"></p>
     </div>
     <div>
-      <input id="training" autocomplete="off"/> <button id="train_button">Train</button>
+      <button id="train_button">Train</button>
+      <button id="summary_button">Summary</button>
     </div>
+    <p id="summary">
+      </p>
     <ul id="tdata">      
     </ul>
   </body>
@@ -29,13 +32,21 @@
 <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
 <script>
   var socket = io('http://localhost:80');
+  var text_position = 0;
   socket.on('prediction', function (data) {
     console.log(data);
     $('#prediction').text(data);
   });
+  socket.on('summary', function (data) {
+    $('#summary').text($('#summary').text() + data);
+  });
+
   $('#text').keyup(function() {
-    $('#prediction').text('');
-    socket.emit('predict', $('#text').val());
+    $('#prediction').text('');    
+    var packet = $('#text').val().slice(text_position);
+    text_position = $('#text').val().length;
+    console.log(packet);
+    socket.emit('predict', packet);
   });
   function send_train() {
     var data = $('#training').val();
@@ -43,12 +54,16 @@
     socket.emit('train', data);
     return false;
   }
+  function get_summary() {
+    $('#summary').text('');
+    socket.emit('summary', '');
+    return false;
+  } 
+    
   $('#train_button').click(send_train);
-  $('#training').keypress(function(e) {
-    if(e.which == 13) {
-      send_train();
-    }
-  });
+  $('#summary_button').click(get_summary);
+
+
     
   
 </script>

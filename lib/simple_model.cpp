@@ -17,7 +17,7 @@ wordmodel::SimpleModel::~SimpleModel() {
     delete prediction_tok_;
 }
 
-void wordmodel::SimpleModel::write_summary(ostream& out) const {
+void wordmodel::SimpleModel::write_summary(ostream& out) {
   out << "Simple Word Model" << endl;
 }
 

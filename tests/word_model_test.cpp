@@ -91,8 +91,8 @@ BOOST_AUTO_TEST_CASE( parser_index_word_conversion )
   BOOST_REQUIRE( !parser.get_word(548434343, &word) );  
 }
 
-/*
-BOOST_AUTO_TEST_CASE( grimm_book )
+
+BOOST_AUTO_TEST_CASE( parser_grimm_book )
 {
   
   ifstream grimm;
@@ -101,12 +101,12 @@ BOOST_AUTO_TEST_CASE( grimm_book )
 
   timer t;
   Parser big_parser(grimm);  
-  BOOST_REQUIRE( t.elapsed() < 1);
+  BOOST_REQUIRE( t.elapsed() < 2);
 
   BOOST_REQUIRE( big_parser.count(",") == 8906 );
   
 }
-*/
+
 
 BOOST_AUTO_TEST_SUITE_END()
 
@@ -150,7 +150,7 @@ struct BoundedCTModelTest {
 
 BOOST_FIXTURE_TEST_SUITE( bounded_tree_test, BoundedCTModelTest )
 
-/*
+
 BOOST_AUTO_TEST_CASE( bounded_tree_test_edge_cases ) {
 
   BOOST_REQUIRE( bcm.get_prediction().compare("") == 0 );
@@ -160,35 +160,52 @@ BOOST_AUTO_TEST_CASE( bounded_tree_test_edge_cases ) {
   string s(" !!! ! ! ! !  %$5645 $#!$!!$$!  R$#$#3 \n $#! ");
   for(char& c: s)
     bcm.putc(c);
-  std::cout << bcm.get_prediction() << std::endl;
+  //std::cout << bcm.get_prediction() << std::endl;
+  //bcm.write_summary(std::cout);
   BOOST_REQUIRE( bcm.get_prediction().compare("!") == 0 );
 }
-*/
+
+BOOST_AUTO_TEST_CASE( bounded_tree_split_test ) {
+
+  BOOST_REQUIRE( bcm.get_prediction().compare("") == 0 );
+  bcm.prediction_result(-5, true);
+  bcm.prediction_result(49304393, true);
+
+  string s("The quick brown fox jumps over the lazy dog for the love of god I should go to bed. ");
+  for(char& c: s)
+    bcm.putc(c);
+  //std::cout << bcm.get_prediction() << std::endl;
+  //bcm.write_summary(std::cout);
+}
+
 
 BOOST_AUTO_TEST_CASE( bounded_tree_test_easy ) {
-
-  ofstream graph_out;
-  graph_out.open("hello_world.dot");
   
-  //write tree
-  bcm.write_summary(graph_out);
-  
-  for(int i = 0; i < 2; i++) {
+  for(int i = 0; i < 25; i++) {
     string s("Hello ");
     for(char& c: s)
       bcm.putc(c);
-    std::cout << bcm.get_prediction() << std::endl;
-    bcm.write_summary(graph_out);
 
     s = "World ";
     for(char& c: s)
       bcm.putc(c);
-    std::cout << bcm.get_prediction() << std::endl;
-    bcm.write_summary(graph_out);
 
   }
 
-  BOOST_REQUIRE( bcm.get_prediction().compare("World") == 0 );
+  BOOST_REQUIRE( bcm.get_prediction().compare("Hello") == 0 );
+
+
+  //check output
+  ifstream graph_ref;
+  graph_ref.open("hello_world_ref.dot");
+
+  stringstream ss;
+  bcm.write_summary(ss);
+  
+  while(ss.good() && graph_ref.good()) {
+    BOOST_REQUIRE( ss.get() == graph_ref.get() );
+  }
+
 }
 
 BOOST_AUTO_TEST_CASE( bounded_tree_grimm ) {
@@ -203,10 +220,9 @@ BOOST_AUTO_TEST_CASE( bounded_tree_grimm ) {
     bcm.putc(grimm.get());
     length--;
   }
-  std::cout << t.elapsed() << std::endl;
-  BOOST_REQUIRE( t.elapsed() < 1);
+  //std::cout << t.elapsed() << std::endl;
+  BOOST_REQUIRE( t.elapsed() < 0.5);
 }
-
 
 
 BOOST_AUTO_TEST_SUITE_END()
