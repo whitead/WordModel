@@ -2,7 +2,8 @@ var net = require('net');
 var sys = require('sys');
 var packet = require('./packet');
 
-function ModelAdaptor(host, port, prediction_callback) {
+function ModelAdaptor(host, port, prediction_callback,
+		     summary_callback) {
     this.socket = new net.Socket();
     this.socket.on('error', function(er) {
 	if (er.errno === process.ECONNREFUSED) {
@@ -20,6 +21,8 @@ function ModelAdaptor(host, port, prediction_callback) {
 	    var p = packet.decode_packet(data);
 	    if(p.type == packet.PACKET_TYPE.PREDICTION)
 		prediction_callback(p.string);
+	    if(p.type == packet.PACKET_TYPE.SUMMARY)
+		summary_callback(p.string);
 	    data = p.remaining;
 	} while(p.remaining.length > 0);
     });
@@ -35,6 +38,11 @@ ModelAdaptor.prototype.train = function(str) {
     this.socket.write(p);
 };
 
+ModelAdaptor.prototype.summary = function() {
+    var p = packet.encode_packet(packet.PACKET_TYPE.SUMMARY, "",
+				 packet.create_buffer());
+    this.socket.write(p);
+}
 
 ModelAdaptor.prototype.close = function() {
     this.socket.unref();

@@ -22,7 +22,7 @@ namespace wordmodel {
     SimpleModel& operator=(const SimpleModel&) = delete; //disallow copying
     SimpleModel& operator=(const SimpleModel&&) = delete; 
     ~SimpleModel();
-    void write_summary(std::ostream& out) const override;
+    void write_summary(std::ostream& out) override;
     void putc(char c) override;
     const std::string& get_prediction(int* prediction_id) override;
     using WordModel::get_prediction;

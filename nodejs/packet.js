@@ -5,7 +5,8 @@ var max_body_length = 512;
 PACKET_TYPE = {
     TRAIN : 0,
     PREDICT : 1,
-    PREDICTION : 2
+    PREDICTION : 2,
+    SUMMARY : 3
 };
 
 exports.PACKET_TYPE = PACKET_TYPE;

@@ -23,3 +23,4 @@ add_custom_target (test ALL
 
 		 
 file (COPY grimm.txt DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+file (COPY hello_world_ref.dot DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
