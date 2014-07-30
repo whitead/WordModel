@@ -3,7 +3,6 @@
 wordmodel::BoundedCTModel::BoundedCTModel() : BoundedCTModel(5) {}
 
 wordmodel::BoundedCTModel::~BoundedCTModel() {
-  delete prediction_tok_;
 }
 
 wordmodel::BoundedCTModel::BoundedCTModel(int bound) : token_number_(0),
@@ -16,7 +15,6 @@ wordmodel::BoundedCTModel::BoundedCTModel(int bound) : token_number_(0),
   words_.push_back("");
   word_map_[""] = token_number_++;
   root_weights_.push_back(0.);
-  setup_inputstream();
 }
 wordmodel::BoundedCTModel::BoundedCTModel(BoundedCTModel&& other) :
   ct_(std::move(other.ct_)),  
@@ -26,12 +24,13 @@ wordmodel::BoundedCTModel::BoundedCTModel(BoundedCTModel&& other) :
   prediction_context_(std::move(other.prediction_context_)),  		      
   word_map_(std::move(other.word_map_)),
   prediction_id_(other.prediction_id_),
+  current_string_(std::move(other.current_string_)),
   bound_(other.bound_),
   mistakes_(other.mistakes_),
   token_number_(other.token_number_),
   prediction_(other.prediction_){
   ct_.set_visitor(this);
-  setup_inputstream();
+
 }
 
 
@@ -41,12 +40,52 @@ void wordmodel::BoundedCTModel::write_summary(std::ostream& out) {
 
 
 void wordmodel::BoundedCTModel::putc(char c) {
-  input_stream_ << c;
+
+  std::cout << "received " << std::hex << (int) c << std::endl;
+
+  //end of stream for now
+  if(c == '\x00')
+    return;
+
+  if(c == '\b') { //backspace
+    if(current_string.size() > 0)
+      current_string_.erase(current_string_.size() - 1);
+  } else if(c != '\'' && (std::iscntrl(c) || std::isspace(c) || std::ispunct(c))) {
+  //if it's a space, control characeter or punctuation, we're done with
+  //current string. Need to also remove ' contraction. 
+
+    //first add it if it hasn't been seen before        
+    auto it = word_map_.find(current_string_);
+    if(it == word_map_.end()) {
+      word_map_[current_string_] = token_number_++;
+      words_.emplace_back(current_string_);
+      root_weights_.push_back(mistakes_ / 2); //just some non-zero number
+    }
+
+    //check if we regret it
+    //automatically passes on first pass because both are 0
+    if(prediction_ != word_map_[current_string_])
+      ct_.regret(prediction_id_, bound_);
+
+    prediction_context_.push_back(word_map_[current_string_]);
+
+    while(prediction_context_.size() > bound_)
+      prediction_context_.pop_front();
+
+    current_string_.clear();
+    if(std::ispunct(c)) //if punctuation, save it.
+      current_string_ += c;
+    ct_.predict(prediction_context_, 
+		prediction_context_.size(),
+		&prediction_id_);
+  } else if(std::isprint(c)) {
+    current_string_ += c; 
+  }
+
 }
 
 const std::string& wordmodel::BoundedCTModel::get_prediction(int* prediction_id) {
 
-  do_predict();
   if(prediction_id != NULL)
     *prediction_id = prediction_id_;
   return words_[prediction_];
@@ -117,49 +156,4 @@ void wordmodel::BoundedCTModel::add_node(node_size node,
 					 ContextData& data) {  
   std::unordered_map<word_size, double> temp;
   weights_.emplace_back(std::move(temp));
-}
-
-void wordmodel::BoundedCTModel::do_predict(void) {
-
-  for(auto t: *prediction_tok_) {   
-
-    //first add it if it hasn't been seen before        
-    auto it = word_map_.find(t);
-    if(it == word_map_.end()) {
-      word_map_[t] = token_number_++;
-      words_.emplace_back(t);      
-      root_weights_.push_back(static_cast<double>(mistakes_) / 2); 
-    }
-
-    //check if we regret it
-    //automatically passes on first pass because both are 0
-    if(prediction_ != word_map_[t]) {
-      ct_.regret(prediction_id_, bound_);
-      mistakes_++;
-    }
-
-    prediction_context_.push_back(word_map_[t]);
-
-    while(prediction_context_.size() > bound_)
-      prediction_context_.pop_front();
-
-    ct_.predict(prediction_context_, 
-		prediction_context_.size(),
-		&prediction_id_);
-  }
-}
-
-void wordmodel::BoundedCTModel::setup_inputstream() {
- 
-  using namespace boost;
-  using namespace std;
-  
-  //turn the stream into an iterator
-  istreambuf_iterator<char> stream_iter(input_stream_);
-  istreambuf_iterator<char> end_of_stream;
-
-    //build a tokenizer
-  char_separator<char> sep(TOKENIZER_DELIMS);
-  prediction_tok_ =  new boost::tokenizer<boost::char_separator<char>, std::istreambuf_iterator<char> >(stream_iter,  end_of_stream, sep);
-
 }

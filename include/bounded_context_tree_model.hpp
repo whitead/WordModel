@@ -35,7 +35,6 @@ namespace wordmodel {
     BoundedCTModel(BoundedCTModel&) = delete; //disallow copy constructor
     BoundedCTModel& operator=(const BoundedCTModel&) = delete; //disallow copying
     BoundedCTModel& operator=(const BoundedCTModel&&) = delete; 
-    ~BoundedCTModel() {}
 
     void write_summary(std::ostream& out) override;
     void putc(char c) override;
@@ -48,8 +47,6 @@ namespace wordmodel {
     void finish_predict(ContextData& data);
     void push_regret(node_size node, int i, ContextData& data);
     void add_node(node_size node, int i, ContextData& data);
-    void setup_inputstream();
-    void do_predict(void);
 
     ContextTree<BoundedCTModel, word_size, ContextData, 10>  ct_;
     //dense in the number of nodes, sparse in the words
@@ -66,8 +63,7 @@ namespace wordmodel {
     unsigned int mistakes_;
     word_size token_number_;
     word_size prediction_;
-    std::stringstream input_stream_;
-    boost::tokenizer<boost::char_separator<char>, std::istreambuf_iterator<char> >* prediction_tok_;
+    std::string current_string_;
   };
 
 }

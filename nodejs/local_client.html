@@ -41,13 +41,18 @@
     $('#summary').text($('#summary').text() + data);
   });
 
-  $('#text').keyup(function() {
+  $('#text').keypress(function(e) {
     $('#prediction').text('');    
-    var packet = $('#text').val().slice(text_position);
-    text_position = $('#text').val().length;
-    console.log(packet);
-    socket.emit('predict', packet);
+    socket.emit('predict', String.fromCharCode(e.keyCode));
   });
+  //delete key
+  $('#text').keyup(function(e) {
+    if(e.keyCode == 8) {//backaspace
+      console.log('backspace');
+      socket.emit('predict', '\b');
+    }
+  });
+
   function send_train() {
     var data = $('#training').val();
     $('#tdata').append($('<li>').text(data));
