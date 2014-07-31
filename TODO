@@ -1,0 +1,5 @@
+1. Delay adding new token to root_rates until after training is revelaed
+2. Nest models by calls to predictions and callbacks to regret (or something)
+3. Use a special interface token for dealing with when tokens for the above are created.
+4. Use a mistake token, which causes the algorithm to look for an uncle node. (requires bidirectional, use < for seeing if node id is child or parent)
+5. I think there was something else. Will come back to it.
