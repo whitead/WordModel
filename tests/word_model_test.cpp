@@ -142,7 +142,7 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE( bounded_tree_test )
 
-/*
+
 BOOST_AUTO_TEST_CASE( mistake_count ) {
 
   BoundedCTModel bcm;
@@ -159,9 +159,9 @@ BOOST_AUTO_TEST_CASE( mistake_count ) {
 
   BOOST_REQUIRE( mistakes == 3);
 }
-*/
 
-/*
+
+
 BOOST_AUTO_TEST_CASE( bounded_tree_test_edge_cases ) {
 
   BoundedCTModel bcm; 
@@ -176,8 +176,8 @@ BOOST_AUTO_TEST_CASE( bounded_tree_test_edge_cases ) {
   //bcm.write_summary(std::cout);
   BOOST_REQUIRE( bcm.get_prediction().compare("!") == 0 );
 }
-*/
-/*
+
+
 BOOST_AUTO_TEST_CASE( bounded_tree_split_test ) {
 
   BoundedCTModel bcm; 
@@ -221,7 +221,7 @@ BOOST_AUTO_TEST_CASE( bounded_tree_test_easy ) {
   }
 
 }
-*/
+
 
 BOOST_AUTO_TEST_CASE( bounded_tree_grimm ) {
 
@@ -231,14 +231,14 @@ BOOST_AUTO_TEST_CASE( bounded_tree_grimm ) {
   BOOST_REQUIRE( grimm.is_open() );
 
   timer t;
-  int length = 1000000;
+  int length = 10000;
   while(grimm.good() && length > 0) {
     bcm.putc(grimm.get());
     length--;
   }
 
-  std::cout << t.elapsed() << std::endl;
-  //  BOOST_REQUIRE( t.elapsed() < 0.5);
+  //std::cout << t.elapsed() << std::endl;
+  BOOST_REQUIRE( t.elapsed() < 0.5);
 }
 
 

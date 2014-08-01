@@ -26,6 +26,9 @@ BOOST_AUTO_TEST_CASE( packet_test )
   p.encode_header();
   BOOST_REQUIRE( p.decode_header() );
   BOOST_REQUIRE( p.length() == length );
+  std::cout << p.body_length() << std::endl;
+  std::cout << p.body() << std::endl;
+  std::cout << std::strlen(p.body()) << std::endl;
   BOOST_REQUIRE( p.body_length() == std::strlen(p.body()) );
   BOOST_REQUIRE( p.type() == Packet::PACKET_TYPE::TRAIN );
 

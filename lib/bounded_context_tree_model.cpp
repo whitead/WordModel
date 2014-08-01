@@ -121,14 +121,26 @@ void wordmodel::BoundedCTModel::start_predict(ContextData& data) {
 }
 
 //finish the prediction
+/* This method is quite slow. Here's what I've tried:
+ * 
+ * 1. branch prediction hints (slower)
+ * 2. Using iterators instead of [] operator (slower)
+ * 3. -Ofast -ftree-vectorize. Increased speed by ~10%
+ * 
+ * Not sure what else I can for finding the minimum element, it's
+ * pretty straight forward. 
+ *
+ */
 void wordmodel::BoundedCTModel::finish_predict(ContextData& data) {
-  double min = token_number_;
+
+  double min = mistakes_;
 
 #ifdef DEBUG_BCT
   std::cout << "Final weights: " << std::endl;
   for(int i = 0; i < data.size(); i++)
     std::cout << "\t <" << words_[i] << ">=" << data[i] << std::endl;
 #endif
+
   for(int i = 0; i < data.size(); i++) {
     if(data[i] < min) {
       min = data[i];
