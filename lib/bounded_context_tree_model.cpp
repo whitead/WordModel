@@ -14,7 +14,7 @@ wordmodel::BoundedCTModel::BoundedCTModel(int bound) : token_number_(0),
   //push null string
   words_.push_back("");
   word_map_[""] = token_number_++;
-  root_weights_.push_back(0.);
+  root_weights_.push_back(1.);
 }
 wordmodel::BoundedCTModel::BoundedCTModel(BoundedCTModel&& other) :
   ct_(std::move(other.ct_)),  
@@ -41,8 +41,6 @@ void wordmodel::BoundedCTModel::write_summary(std::ostream& out) {
 
 void wordmodel::BoundedCTModel::putc(char c) {
 
-  //std::cout << "received " << std::hex << (int) c << std::endl;
-
   //end of stream for now
   if(c == '\x00')
     return;
@@ -51,6 +49,11 @@ void wordmodel::BoundedCTModel::putc(char c) {
     if(current_string_.size() > 0)
       current_string_.erase(current_string_.size() - 1);
   } else if(c != '\'' && (std::iscntrl(c) || std::isspace(c) || std::ispunct(c))) {
+
+#ifdef DEBUG_BCT
+    std::cout << "Triggered interface for word <" << current_string_ << ">" << std::endl;
+#endif
+
   //if it's a space, control characeter or punctuation, we're done with
   //current string. Need to also remove ' contraction. 
 
@@ -63,8 +66,10 @@ void wordmodel::BoundedCTModel::putc(char c) {
 
     //check if we regret it
     //automatically passes on first pass because both are 0
-    if(prediction_ != word_map_[current_string_])
+    if(prediction_ != word_map_[current_string_]) {
+      mistakes_++;
       ct_.regret(prediction_id_, bound_);
+    }
 
     prediction_context_.push_back(word_map_[current_string_]);
 
@@ -102,14 +107,28 @@ void wordmodel::BoundedCTModel::prediction_result(int prediction_id, bool outcom
 void wordmodel::BoundedCTModel::start_predict(ContextData& data) {
   prediction_ = 0; //empty string
   //clear data and set to root node
+#ifdef DEBUG_BCT
+  std::cout << "Initial weights: " << std::endl;
+#endif
   data.resize(root_weights_.size());
-  for(int i = 0; i < root_weights_.size(); ++i)
+  for(int i = 0; i < root_weights_.size(); ++i) {
     data[i] = root_weights_[i];
+#ifdef DEBUG_BCT
+    std::cout << "\t <" << words_[i] << ">=" << data[i] << std::endl;
+#endif
+
+  }
 }
 
 //finish the prediction
 void wordmodel::BoundedCTModel::finish_predict(ContextData& data) {
   double min = token_number_;
+
+#ifdef DEBUG_BCT
+  std::cout << "Final weights: " << std::endl;
+  for(int i = 0; i < data.size(); i++)
+    std::cout << "\t <" << words_[i] << ">=" << data[i] << std::endl;
+#endif
   for(int i = 0; i < data.size(); i++) {
     if(data[i] < min) {
       min = data[i];
@@ -119,7 +138,7 @@ void wordmodel::BoundedCTModel::finish_predict(ContextData& data) {
   
   //push back any new tokens encountered
   while(root_weights_.size() < token_number_)
-    root_weights_.push_back(0); 
+    root_weights_.push_back(mistakes_); 
 
 }
 

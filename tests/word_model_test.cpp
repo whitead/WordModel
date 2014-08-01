@@ -140,19 +140,31 @@ BOOST_AUTO_TEST_SUITE_END()
 
 /**************************/
 
-struct BoundedCTModelTest {
-  BoundedCTModel bcm; 
-  BoundedCTModelTest() : bcm(5) {
+BOOST_AUTO_TEST_SUITE( bounded_tree_test )
 
+/*
+BOOST_AUTO_TEST_CASE( mistake_count ) {
+
+  BoundedCTModel bcm;
+
+  int mistakes = 0;
+  std::vector<std::string> convert;
+  convert.push_back("0");
+  convert.push_back("1");
+  for(int i = 0; i < 100; i++) {
+    bcm.putc(convert[i % 2][0]);
+    bcm.putc(' ');
+    mistakes += bcm.get_prediction().compare(std::string(convert[(i+1) % 2])) ? 1 : 0;
   }
 
-};
+  BOOST_REQUIRE( mistakes == 3);
+}
+*/
 
-BOOST_FIXTURE_TEST_SUITE( bounded_tree_test, BoundedCTModelTest )
-
-
+/*
 BOOST_AUTO_TEST_CASE( bounded_tree_test_edge_cases ) {
 
+  BoundedCTModel bcm; 
   BOOST_REQUIRE( bcm.get_prediction().compare("") == 0 );
   bcm.prediction_result(-5, true);
   bcm.prediction_result(49304393, true);
@@ -164,9 +176,11 @@ BOOST_AUTO_TEST_CASE( bounded_tree_test_edge_cases ) {
   //bcm.write_summary(std::cout);
   BOOST_REQUIRE( bcm.get_prediction().compare("!") == 0 );
 }
-
+*/
+/*
 BOOST_AUTO_TEST_CASE( bounded_tree_split_test ) {
 
+  BoundedCTModel bcm; 
   BOOST_REQUIRE( bcm.get_prediction().compare("") == 0 );
   bcm.prediction_result(-5, true);
   bcm.prediction_result(49304393, true);
@@ -181,6 +195,7 @@ BOOST_AUTO_TEST_CASE( bounded_tree_split_test ) {
 
 BOOST_AUTO_TEST_CASE( bounded_tree_test_easy ) {
   
+  BoundedCTModel bcm; 
   for(int i = 0; i < 25; i++) {
     string s("Hello ");
     for(char& c: s)
@@ -194,7 +209,6 @@ BOOST_AUTO_TEST_CASE( bounded_tree_test_easy ) {
 
   BOOST_REQUIRE( bcm.get_prediction().compare("Hello") == 0 );
 
-
   //check output
   ifstream graph_ref;
   graph_ref.open("hello_world_ref.dot");
@@ -207,21 +221,24 @@ BOOST_AUTO_TEST_CASE( bounded_tree_test_easy ) {
   }
 
 }
+*/
 
 BOOST_AUTO_TEST_CASE( bounded_tree_grimm ) {
 
+  BoundedCTModel bcm; 
   ifstream grimm;
   grimm.open("grimm.txt");
   BOOST_REQUIRE( grimm.is_open() );
 
   timer t;
-  int length = 10000;
+  int length = 1000000;
   while(grimm.good() && length > 0) {
     bcm.putc(grimm.get());
     length--;
   }
-  //std::cout << t.elapsed() << std::endl;
-  BOOST_REQUIRE( t.elapsed() < 0.5);
+
+  std::cout << t.elapsed() << std::endl;
+  //  BOOST_REQUIRE( t.elapsed() < 0.5);
 }
 
 
