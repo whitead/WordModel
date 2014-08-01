@@ -41,14 +41,14 @@ void wordmodel::BoundedCTModel::write_summary(std::ostream& out) {
 
 void wordmodel::BoundedCTModel::putc(char c) {
 
-  std::cout << "received " << std::hex << (int) c << std::endl;
+  //std::cout << "received " << std::hex << (int) c << std::endl;
 
   //end of stream for now
   if(c == '\x00')
     return;
 
   if(c == '\b') { //backspace
-    if(current_string.size() > 0)
+    if(current_string_.size() > 0)
       current_string_.erase(current_string_.size() - 1);
   } else if(c != '\'' && (std::iscntrl(c) || std::isspace(c) || std::ispunct(c))) {
   //if it's a space, control characeter or punctuation, we're done with
@@ -59,7 +59,6 @@ void wordmodel::BoundedCTModel::putc(char c) {
     if(it == word_map_.end()) {
       word_map_[current_string_] = token_number_++;
       words_.emplace_back(current_string_);
-      root_weights_.push_back(mistakes_ / 2); //just some non-zero number
     }
 
     //check if we regret it
@@ -72,12 +71,15 @@ void wordmodel::BoundedCTModel::putc(char c) {
     while(prediction_context_.size() > bound_)
       prediction_context_.pop_front();
 
-    current_string_.clear();
-    if(std::ispunct(c)) //if punctuation, save it.
-      current_string_ += c;
     ct_.predict(prediction_context_, 
 		prediction_context_.size(),
 		&prediction_id_);
+
+    current_string_.clear();
+    if(std::ispunct(c)) //if punctuation, save it.
+      current_string_ += c;
+
+
   } else if(std::isprint(c)) {
     current_string_ += c; 
   }
@@ -98,22 +100,27 @@ void wordmodel::BoundedCTModel::prediction_result(int prediction_id, bool outcom
 
 //clear the data
 void wordmodel::BoundedCTModel::start_predict(ContextData& data) {
-  prediction_ = token_number_; //an unseen token
+  prediction_ = 0; //empty string
   //clear data and set to root node
-  data.resize(token_number_);
-  for(int i = 0; i < token_number_; ++i)
+  data.resize(root_weights_.size());
+  for(int i = 0; i < root_weights_.size(); ++i)
     data[i] = root_weights_[i];
 }
 
 //finish the prediction
 void wordmodel::BoundedCTModel::finish_predict(ContextData& data) {
   double min = token_number_;
-  for(int i = 0; i < token_number_; i++) {
+  for(int i = 0; i < data.size(); i++) {
     if(data[i] < min) {
       min = data[i];
       prediction_ = i;
-    }      
+    }
   }
+  
+  //push back any new tokens encountered
+  while(root_weights_.size() < token_number_)
+    root_weights_.push_back(0); 
+
 }
 
 

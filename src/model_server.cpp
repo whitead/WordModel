@@ -2,6 +2,9 @@
 #include "simple_model.hpp"
 #include "bounded_context_tree_model.hpp"
 
+#include <fstream>
+#include <iostream>
+
 using boost::asio::ip::tcp;
 
 ModelDispatcher::ModelDispatcher(boost::asio::io_service& io_service,

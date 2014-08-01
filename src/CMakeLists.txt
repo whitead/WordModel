@@ -16,3 +16,5 @@ target_link_libraries (model_server
                        ${Boost_THREAD_LIBRARY}
                        ${Boost_SYSTEM_LIBRARY}
 		       ${Boost_LIBRARIES})
+
+file (COPY training.txt DESTINATION ${CMAKE_CURRENT_BINARY_DIR})

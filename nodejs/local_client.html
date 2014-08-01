@@ -7,7 +7,7 @@
       body { font: 13px Helvetica, Arial; }
       div { padding: 3px; width: 100%; }      
       #prediction{ padding:5px 10px;}
-      div input { background:#DDD; border: 2px; padding: 10px; width: 75%; margin-right: .5%; }
+      div textarea { background:#DDD; border: 2px; padding: 10px; width: 75%; margin-right: .5%;}
       #tdata { list-style-type: none; margin: 0; padding: 0; }
       #tdata li { padding: 5px 10px; }
       #tdata li:nth-child(odd) { background: #eee; }
@@ -16,7 +16,8 @@
   </head>
   <body>
     <div>      
-      <input id="text" autocomplete="off"/> <p id="prediction"></p>
+      <textarea id="text" autocomplete="off" rows="25"> </textarea>
+      <p id="prediction"></p>
     </div>
     <div>
       <button id="train_button">Train</button>
@@ -35,14 +36,14 @@
   var text_position = 0;
   socket.on('prediction', function (data) {
     console.log(data);
-    $('#prediction').text(data);
+    $('#prediction').text('<' + data + '>');
   });
   socket.on('summary', function (data) {
     $('#summary').text($('#summary').text() + data);
   });
 
   $('#text').keypress(function(e) {
-    $('#prediction').text('');    
+    $('#prediction').text('...');    
     socket.emit('predict', String.fromCharCode(e.keyCode));
   });
   //delete key
