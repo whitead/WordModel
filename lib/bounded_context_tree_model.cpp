@@ -9,12 +9,17 @@ wordmodel::BoundedCTModel::BoundedCTModel(int bound) : token_number_(0),
 						       prediction_(0),
 						       ct_(20),
 						       bound_(bound),
-						       mistakes_(0){
+						       mistakes_(0),
+						       at_interface_(false){
   ct_.set_visitor(this);
   //push null string
   words_.push_back("");
   word_map_[""] = token_number_++;
-  root_weights_.push_back(1.);
+  root_weights_.push_back(1.);  
+  //push interface token
+  words_.push_back("<<!--INTERFACE--!>>");
+  word_map_["<<!--INTERFACE--!>>"] = token_number_++;
+  root_weights_.push_back(1.);  
 }
 wordmodel::BoundedCTModel::BoundedCTModel(BoundedCTModel&& other) :
   ct_(std::move(other.ct_)),  
@@ -28,7 +33,8 @@ wordmodel::BoundedCTModel::BoundedCTModel(BoundedCTModel&& other) :
   bound_(other.bound_),
   mistakes_(other.mistakes_),
   token_number_(other.token_number_),
-  prediction_(other.prediction_){
+  prediction_(other.prediction_)
+  at_interface_(other.at_interface_){
   ct_.set_visitor(this);
 
 }
@@ -39,7 +45,7 @@ void wordmodel::BoundedCTModel::write_summary(std::ostream& out) {
 }
 
 
-void wordmodel::BoundedCTModel::putc(char c) {
+bool wordmodel::BoundedCTModel::putc(char c) {
 
   //end of stream for now
   if(c == '\x00')
@@ -48,16 +54,35 @@ void wordmodel::BoundedCTModel::putc(char c) {
   if(c == '\b') { //backspace
     if(current_string_.size() > 0)
       current_string_.erase(current_string_.size() - 1);
-  } else if(c != '\'' && (std::iscntrl(c) || std::isspace(c) || std::ispunct(c))) {
+  } 
 
-#ifdef DEBUG_BCT
-    std::cout << "Triggered interface for word <" << current_string_ << ">" << std::endl;
-#endif
+  if(std::isprint(c)) {
+    current_string_ += c; 
+    interface(false);
+  }
 
-  //if it's a space, control characeter or punctuation, we're done with
-  //current string. Need to also remove ' contraction. 
+}
 
-    //first add it if it hasn't been seen before        
+const std::string& wordmodel::BoundedCTModel::get_prediction(int* prediction_id) {
+
+  if(prediction_id != NULL)
+    *prediction_id = prediction_id_;
+  return words_[prediction_];
+}
+
+bool wordmodel::BoundedCTModel::interface() const {
+  return at_interface_;
+}
+
+void wordmodel::BoundedCTModel::interface(bool at_interface) const {
+  at_interface_ = at_interface;
+  if(at_interface_)
+    do_predict();
+}
+
+void wordmodel::BoundedCTModeel::do_predict() {
+
+    //first add our current string if it hasn't been seen before
     auto it = word_map_.find(current_string_);
     if(it == word_map_.end()) {
       word_map_[current_string_] = token_number_++;
@@ -81,21 +106,7 @@ void wordmodel::BoundedCTModel::putc(char c) {
 		&prediction_id_);
 
     current_string_.clear();
-    if(std::ispunct(c)) //if punctuation, save it.
-      current_string_ += c;
 
-
-  } else if(std::isprint(c)) {
-    current_string_ += c; 
-  }
-
-}
-
-const std::string& wordmodel::BoundedCTModel::get_prediction(int* prediction_id) {
-
-  if(prediction_id != NULL)
-    *prediction_id = prediction_id_;
-  return words_[prediction_];
 }
 
 void wordmodel::BoundedCTModel::prediction_result(int prediction_id, bool outcome) {

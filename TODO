@@ -1,4 +1,125 @@
-1. Delay adding new token to root_rates until after training is revelaed
+Nested models
+=========================
+
+Create a dispatcher that multiplexes the putc command. The putc
+command should trigger an interface the multiplexer notifies the model
+above the notifier in the stack of models. When calling a prediction,
+if a model is not at an interface it should get a prediction from the
+lower model in the stack. So we'll have a get_prediction method which
+takes a string which is used unless the model is at an interface.
+
+Psuedo-code:
+
+Multiplexer:
+  putc(c):
+    bool interface = false;
+    //this assumes the first element is the lowest in the hierarchy
+    for(model in stack):
+      model.interface(interface)
+      interface = model.putc(c)
+            
+  get_prediction():
+    double weights[model_number + 1];
+    data token[model_number+1];
+    int context_id
+
+    weights[0] = 0;
+    token[0] = "";
+
+    for(model in stack)
+      //This should use the token, unless it's at an interface.
+      //If we use the token, we need to add our weights since it's
+      //not definite.
+      
+      token[i+1] = model.get_prediction(&context_id, token[i])	
+      if(model.interface())
+        weights[i + 1] = weights[i] + model.get_prediction_weight(context_id)
+      else
+        weights[i+1] =  model.get_prediction_weight(context_id)
+	      
+    
+
+Transitions
+====================    
+
+The transitions will be dispatched via the multiplexer. They are
+signlaed by models with calls to `interface`. The models arrive at the
+decision through interface tokens. They can be regretted just like
+normal. The regret needs to be normalized by the token space when
+moving between models. For example, if one model exists on the 26
+letters and regret is propogated from a model of all English words,
+the regret should be significantly lower (26 / number of words). The
+next issue is that models won't naturally spearate into what I would
+consider my prior belief. For example, the procedure I've written so
+far wouldn't separate two models into a single character and a string
+model. That's why I arrived at the idea of morphology descriptors,
+however it's been unclear how to incorporate those into the regret
+framework. One idea is to make the root node have morphology children,
+so that instead of the first token for tree navigation being the last
+observed token, it's instead a morphology 'token'. The next idea is to
+have a matrix so that the morphology vector multiplied by the matrix
+gives back a vector of weights on the words. This could replace or
+supplement the root vector that currently corresponds to the empty
+token. Yes, I think that's the right idea. The matrix will be sparse,
+so again a vector of unordered_maps. Next, the dimension of the
+morphology vector needs to be really low. For example, length of the
+string should be something like 0, 1, 2. Yes, I think clustering the
+morphology vectors into classes is the way to go. Oh boy, now we've
+added online classification into this nonsense. Is there a regret
+formulation for online classification? Well yes there is, but not for
+the class number. That also complicates the regret propogation. That's
+not the right word. It complicates the gradient propogation. But
+really it doesn't very much.
+
+What about changing this idea around. Maybe the morphology vector
+should be used to choose which model should treat the string. The
+advantage there is the lack of a stack of models and the
+classification of morhpology vectors is unified for the models. THe
+disadvantage is that the information about which model is best at a
+given time depends less and less on morphology as the models observe a
+word. For example, the word "sometim" clearly is an incomplete word
+not should be dispatched to a character model and not a string model,
+but that would not be conveyed correctly by a morphology vector. The
+idea of the morphology is to seed the types of model. Maybe the
+morphology vector should only be used for triggering interfaces in
+unseen words...? No, because the idea is useful for treating never
+seen before tokens as well.
+
+Morphology vector =  MV
+     
+What would solve both the clustering of MV and mistake prediction is
+grouping tokens in nodes. Like edge has a weight...? No, each node has
+a cousing weight...?  Maybe I could order the edges. No. That doesn't
+work. I need to group tokens into the nodes. That's the
+answer. There's no obvious way of putting that into the online
+learning framework. A join and split would be very challenging. Unless
+I use some kind of infinite model expansion. Ok yes that's that's
+possible. The distance metric is something like number of tree
+modifications to go from one model to another and I can run an
+algorithm on that space. That will create a ton of exploration
+though. If you regret you immediately chcange models and the
+exploitation wouldn't occur until you can't find anymore
+models. Unless you bound the model space around some center. This
+sounds reasonable so far. Maybe this could be a blog topic. An
+algorithm has to exists that does this. It would be like a pigeonhole
+(?) algorithm. We have N objects and want to find the best grouping of
+them into M groups. That works then. The MV could be classified in
+this way and mistakes could be treated in this way. 
+
+
+That reduces the dimension of the MV into something reasonable. Back
+to seeding the models. We seed the morphology isspace to be an
+interface for the character model. Let's consider a practical example
+
+"A", "An", "And", "And " -> interface: "And ", predict "", regret
+interface AND "". That assignment of blame is a tough one to
+understand. Every regret will propogate to the interface token. That's
+fine though, because it will cause exploration of the interface
+tokens. Except ones I've seeded with high loss. This will work, I just
+need to find a grouping of objects without replace online learning
+algorithm.
+
+
 2. Nest models by calls to predictions and callbacks to regret (or something)
 3. Use a special interface token for dealing with when tokens for the above are created.
 4. Use a mistake token, which causes the algorithm to look for an uncle node. (requires bidirectional, use < for seeing if node id is child or parent)

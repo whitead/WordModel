@@ -37,10 +37,13 @@ namespace wordmodel {
     BoundedCTModel& operator=(const BoundedCTModel&&) = delete; 
 
     void write_summary(std::ostream& out) override;
-    void putc(char c) override;
+    bool putc(char c) override;
     const std::string& get_prediction(int* prediction_id) override;
     void prediction_result(int prediction_id, bool outcome) override;
     using WordModel::get_prediction;
+    bool interface() const;   
+    void interface(bool interfaces);
+
   private:
     void start_predict(ContextData& data);
     void push_predict(node_size node, int i, ContextData& data);
@@ -64,6 +67,7 @@ namespace wordmodel {
     word_size token_number_;
     word_size prediction_;
     std::string current_string_;
+    bool at_interface_;
   };
 
 }

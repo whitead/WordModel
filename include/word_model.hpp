@@ -37,8 +37,9 @@ namespace wordmodel {
      * This will also train the model online.
      *   
      * \param in The stream used to predict the next token
+     * \return If the model is at an interface, meaning a new prediction has occured
      */ 
-    virtual void putc(char c) = 0;
+    bool void putc(char c) = 0;
     
     /** \brief Discard all characters passed with putc. 
      *
@@ -62,6 +63,18 @@ namespace wordmodel {
      * \return Prediction
      */
     const std::string& get_prediction() {return get_prediction(NULL);}
+
+    /** \brief True if the model is at interface, meaning
+     * the last call to putc has terminated a token
+     *
+
+     */
+    virtual bool interface() {return false;} const;   
+
+    /** \brief Tell the model that it's at an interface.
+     *
+     */
+    virtual void interface(bool interfaces) {};   
 
   };
 

@@ -21,8 +21,9 @@ void wordmodel::SimpleModel::write_summary(ostream& out) {
   out << "Simple Word Model" << endl;
 }
 
-void wordmodel::SimpleModel::putc(char c) {
+bool wordmodel::SimpleModel::putc(char c) {
   input_stream_ << c;
+  return true;
 }
 
 const std::string& wordmodel::SimpleModel::get_prediction(int* prediction_id) {
