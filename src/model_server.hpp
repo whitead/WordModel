@@ -167,7 +167,7 @@ private:
 
 //add the text to training data
   void train() { 
-    int length = 250000;
+    int length = 2500;
 
     std::cout << "Reading training " << length << " chars lines of training data from: " << std::endl;  
     std::cout << CORPUS("grimm.txt") << std::endl;

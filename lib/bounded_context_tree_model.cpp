@@ -2,7 +2,7 @@
 
 const std::string wordmodel::BoundedCTModel::INTERFACE_TOKEN = "<<!--INTERFACE--!>>";
 
-wordmodel::BoundedCTModel::BoundedCTModel() : BoundedCTModel(5) {}
+wordmodel::BoundedCTModel::BoundedCTModel() : BoundedCTModel(2) {}
 
 wordmodel::BoundedCTModel::~BoundedCTModel() {
 }
@@ -109,6 +109,8 @@ void wordmodel::BoundedCTModel::do_predict() {
     if(prediction_ != word_map_[current_string_]) {
       mistakes_++;
       ct_.regret(prediction_id_, bound_);
+    } else {
+      std::cout << "Correctly predicted <" << current_string_ <<">" << " is <" << words_[prediction_] << ">" << std::endl;
     }
 
     prediction_context_.push_back(word_map_[current_string_]);
