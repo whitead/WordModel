@@ -66,6 +66,7 @@ namespace wordmodel {
      * \return Prediction
      */
     const std::string& get_prediction() {return get_prediction(NULL);}
+    
 
     /** \brief True if the model is at interface, meaning
      * the last call to putc has terminated a token
@@ -73,6 +74,11 @@ namespace wordmodel {
 
      */
     virtual bool detected_interface() const {return true;}
+
+    /** \brief Return cumulatiave training mistakes
+     *
+     */
+    virtual int training_mistakes() const {return 0;}
 
     /** \brief Tell the model that it's at an interface.
      *

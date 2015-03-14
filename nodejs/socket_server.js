@@ -15,6 +15,8 @@ io.sockets.on('connection', function (socket) {
 	socket.emit('prediction', prediction);
     }, function(summary) {
 	socket.emit('summary', summary);
+    }, function(training_results) {
+	socket.emit('train', training_results);
     });
     socket.on('predict', function (token) { 
 	ma.get_prediction(token);

@@ -9,6 +9,7 @@
 #include <fstream>
 #include "packet.hpp"
 #include "word_model.hpp"
+#include <stdio.h>
 
 
 using boost::asio::ip::tcp;
@@ -166,7 +167,7 @@ private:
 
 //add the text to training data
   void train() { 
-    int length = 25000;
+    int length = 250000;
 
     std::cout << "Reading training " << length << " chars lines of training data from: " << std::endl;  
     std::cout << CORPUS("grimm.txt") << std::endl;
@@ -183,6 +184,19 @@ private:
        std::cout << "Failed to read" << std::endl;
     }
 
+    //send the training mistake count
+    bool b_writing = !write_packets_.empty();    
+    Packet p;
+    char* body = p.body();
+    p.type(Packet::TRAIN);
+    p.body_length(sprintf(body, "%d", wm_.training_mistakes()));
+    p.encode_header();
+    write_packets_.emplace_back(p);
+
+    //write the packets
+    if(!b_writing) {
+      write();
+    }    
   }
 
   M wm_;

@@ -42,6 +42,7 @@ namespace wordmodel {
     void prediction_result(int prediction_id, bool outcome) override;
     using WordModel::get_prediction;
     bool detected_interface() const;   
+    int training_mistakes() const override;   
     void interface(bool interfaces);
 
   private:    

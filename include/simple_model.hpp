@@ -33,7 +33,7 @@ namespace wordmodel {
     bool putc(char c) override;
     const std::string& get_prediction(int* prediction_id) override;
     double get_prediction_weight(int* prediction_id) const override;
-    using WordModel::get_prediction;   
+    using WordModel::get_prediction;
     void interface(bool interface) override;
     bool detected_interface() const override;
   private:

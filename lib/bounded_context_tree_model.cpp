@@ -75,6 +75,10 @@ bool wordmodel::BoundedCTModel::detected_interface() const {
   return detected_interface_;
 }
 
+int wordmodel::BoundedCTModel::training_mistakes() const {
+  return mistakes_;
+}
+
 void wordmodel::BoundedCTModel::interface(bool at_interface) {
   if(at_interface && current_string_.size() > 0)
     do_predict();
@@ -85,6 +89,10 @@ void wordmodel::BoundedCTModel::do_predict() {
 
 #ifdef DEBUG_BCT
   std::cout << "Beginning prediction of <" << current_string_ << ">" << std::endl;
+  std::cout << "Context ";
+  for(auto i: prediction_context_)
+    std::cout <<"<" << words_[i] << "> ";
+  std::cout << std::endl;
 #endif
     //first add our current string if it hasn't been seen before
     auto it = word_map_.find(current_string_);
@@ -170,7 +178,7 @@ void wordmodel::BoundedCTModel::finish_predict(ContextData& data) {
   
   //push back any new tokens encountered
   while(root_weights_.size() < token_number_)
-    root_weights_.push_back(mistakes_ / 2); 
+    root_weights_.push_back(mistakes_);  //empirical decision
 
 }
 

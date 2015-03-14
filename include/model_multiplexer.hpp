@@ -52,6 +52,14 @@ namespace wordmodel {
 	m.write_summary(out);      
     }
 
+    int training_mistakes() const override {
+      int sum = 0;
+      for(auto &m: models_)
+	sum += m.training_mistakes();
+      return sum;
+
+    }
+
   private:
     std::vector<std::string> tokens_;
     std::vector<ModelType> models_;

@@ -278,7 +278,7 @@ namespace wordmodel {
 	   vp.first != vp.second; 
 	   ++vp.first) {	
 	v = *vp.first;
-	names[i] = token_names[tree_[v].token].c_str();
+	names[i] = token_names[tree_[v].token + reserved_tokens].c_str();
 
 	//check if we need to add temperorary edges
 	if(tree_[v].subtree) {

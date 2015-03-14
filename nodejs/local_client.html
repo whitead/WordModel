@@ -42,9 +42,12 @@
     //need some code here to turn newlines into breaks
     $('#summary').html($('#summary').text() + data);
   });
+ socket.on('train', function(data) {
+    $('#tdata > li:last').text(data);
+ });
 
   $('#text').keypress(function(e) {
-    $('#prediction').text('...');    
+    $('#prediction').text(String.fromCharCode(e.keyCode) + ':...');    
     socket.emit('predict', String.fromCharCode(e.keyCode));
   });
   //delete key

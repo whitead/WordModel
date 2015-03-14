@@ -3,7 +3,8 @@ var sys = require('sys');
 var packet = require('./packet');
 
 function ModelAdaptor(host, port, prediction_callback,
-		     summary_callback) {
+		     summary_callback,
+		     train_callback) {
     this.socket = new net.Socket();
     this.socket.on('error', function(er) {
 	if (er.errno === process.ECONNREFUSED) {
@@ -23,6 +24,8 @@ function ModelAdaptor(host, port, prediction_callback,
 		prediction_callback(p.string);
 	    if(p.type == packet.PACKET_TYPE.SUMMARY)
 		summary_callback(p.string);
+	    if(p.type == packet.PACKET_TYPE.TRAIN)
+		train_callback(p.string);
 	    data = p.remaining;
 	} while(p.remaining.length > 0);
     });
