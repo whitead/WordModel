@@ -5,6 +5,8 @@
 #include <deque>
 #include <utility>
 #include <sstream>
+#include <iostream>
+#include <fstream>
 #include "packet.hpp"
 #include "word_model.hpp"
 
@@ -14,7 +16,7 @@ typedef std::deque<Packet> Packet_queue;
 
 template<class M>
 class ModelServer : public std::enable_shared_from_this< ModelServer<M> > {
-  
+
 public: 
   /**
    * \param wm The word model which will be used. Send using move semantics
@@ -45,7 +47,7 @@ private:
       send_prediction();
       break;
     case Packet::PACKET_TYPE::TRAIN:
-      add_to_train();
+      train();
       break;
     case Packet::PACKET_TYPE::SUMMARY:
       send_summary();
@@ -58,8 +60,9 @@ private:
   void send_prediction() {
     //first send the prediction text
     const char* body = read_packet_.body();
-    for(int i = 0; i < read_packet_.body_length(); i++)
+    for(int i = 0; i < read_packet_.body_length(); i++) {
       wm_.putc(body[i]);
+    }
     //retrieve the prediction
     std::string prediction = wm_.get_prediction();
     //construct packet if valid prediction
@@ -162,7 +165,24 @@ private:
   }
 
 //add the text to training data
-  void add_to_train() { 
+  void train() { 
+    int length = 25000;
+
+    std::cout << "Reading training " << length << " chars lines of training data from: " << std::endl;  
+    std::cout << CORPUS("grimm.txt") << std::endl;
+    std::ifstream grimm;
+    grimm.open( CORPUS("grimm.txt") );
+
+    while(grimm.good() && length > 0) {
+      wm_.putc(grimm.get());
+      length--;
+    }
+    if(length == 0) 
+      std::cout << "Finished" << std::endl;
+    else {
+       std::cout << "Failed to read" << std::endl;
+    }
+
   }
 
   M wm_;

@@ -6,15 +6,18 @@ set (WordModel_VERSION_MAJOR 0)
 set (WordModel_VERSION_MINOR 1)
 set (WordModel_DESCRIPTION "A C++ syntax and topic word model")
 
+
 #compilation flags
-#set (CXX_STD_VERSION "-std=c++11 -g")
-set (CXX_STD_VERSION "-std=c++11 -O0 -g")
-add_definitions (${CXX_STD_VERSION})
+set (CMAKE_CXX_FLAGS "-std=c++11 -Ofast -march=native -g")
+#set (CMAKE_CXX_FLAGS "-std=c++11 -O0 -DDEBUG_PARSER -g")
+
+add_definitions (${CMAKE_CXX_FLAGS})
 
 
 #set-up directories
 include_directories ("${PROJECT_SOURCE_DIR}/include")
 include_directories ("${PROJECT_SOURCE_DIR}/src")
+add_definitions (-DCORPUS_DIR="${PROJECT_SOURCE_DIR}/tests")
 
 
 #Detect boost

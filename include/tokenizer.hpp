@@ -10,6 +10,6 @@
  */
 
 #include <boost/tokenizer.hpp>
-#define TOKENIZER_DELIMS " \t\n\v\f\r",";:,.?!\""
+#define TOKENIZER_DELIMS " \t\n\v\f\r;:,.?!\""
 
 #endif //TOKENIZER_H

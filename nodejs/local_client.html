@@ -39,7 +39,8 @@
     $('#prediction').text('<' + data + '>');
   });
   socket.on('summary', function (data) {
-    $('#summary').text($('#summary').text() + data);
+    //need some code here to turn newlines into breaks
+    $('#summary').html($('#summary').text() + data.replace(/(?:\r\n|\r|\n)/g, '<br />'));
   });
 
   $('#text').keypress(function(e) {
@@ -55,7 +56,7 @@
   });
 
   function send_train() {
-    var data = $('#training').val();
+    var data = $('#training').val() || '';
     $('#tdata').append($('<li>').text(data));
     socket.emit('train', data);
     return false;

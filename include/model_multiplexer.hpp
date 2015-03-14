@@ -4,45 +4,60 @@
 namespace wordmodel {
 
   template<class ModelType>
-  class ModelMultiplexer : WordModel {
+  class ModelMultiplexer : public WordModel {
+  public:
     
-    const std::string& get_prediction(int* prediction_id) { 
-      double weights[model.size() + 1];
-      
-      //represent an empty model at the bottom
-      weights[0] = 0;
-      tokens_[0] = "";
-      
-      for(auto m : models_) {
-	//use the token prediction if the model is not at an interface
-	model[i + 1] = model.get_prediction(prediction_id, tokens_[i]);
-	if(model.interface())
-	  weights[i + 1] = weights[i] + model.get_prediction_weight(prediction_id);
+    ModelMultiplexer(int levels) {
+      for(int i = 0; i < levels; i++)
+	models_.push_back( ModelType() );
+    }
+
+    using WordModel::get_prediction;
+    
+    const std::string& get_prediction(int* prediction_id) override{ 
+      int i = 0;
+      while(i < models_.size() - 1) {
+	//go up higher as long as we're at an interface
+	if(models_[i].detected_interface())
+	  i++;
 	else
-	  weight[i + 1] = model.get_prediction_weight(prediction_id);
+	  break;
       }
       
-      return tokens_[model.size()];
+      return models_[i].get_prediction(prediction_id);
  
     }
 
-    bool putc(char c) {
-      interface_ = false;
-      for(auto m : models_) {
-	m.interface(interface_);
-	interface_ = m.putc(c);
+    bool putc(char c) override{
+
+      bool temp;
+
+      //treat the lowest level specially
+      interface_ = models_[0].putc(c);
+      models_[0].interface(true);
+
+      for(int i = 1; i < models_.size(); i++) {
+	if(!interface_)
+	  interface_ = models_[i].putc(c);
+	else
+	  models_[i].interface(interface_);	
       }
       
       return interface_;
     }
-    void write_summary(std::ostream& out);
+
+    void write_summary(std::ostream& out) override {
+      out << "A model multiplexer containing models from smallest token size to largest" << std::endl;
+      for(auto &m: models_)
+	m.write_summary(out);      
+    }
 
   private:
     std::vector<std::string> tokens_;
     std::vector<ModelType> models_;
     bool interface_;
 
-  }
+  };
 
 }
 

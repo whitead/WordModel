@@ -1,5 +1,7 @@
 #include "bounded_context_tree_model.hpp"
 
+wordmodel::BoundedCTModel::INTERFACE_TOKEN = "<<!--INTERFACE--!>>";
+
 wordmodel::BoundedCTModel::BoundedCTModel() : BoundedCTModel(5) {}
 
 wordmodel::BoundedCTModel::~BoundedCTModel() {
@@ -17,8 +19,8 @@ wordmodel::BoundedCTModel::BoundedCTModel(int bound) : token_number_(0),
   word_map_[""] = token_number_++;
   root_weights_.push_back(1.);  
   //push interface token
-  words_.push_back("<<!--INTERFACE--!>>");
-  word_map_["<<!--INTERFACE--!>>"] = token_number_++;
+  words_.push_back(INTERFACE_TOKEN);
+  word_map_[INTERFACE_TOKEN] = token_number_++;
   root_weights_.push_back(1.);  
 }
 wordmodel::BoundedCTModel::BoundedCTModel(BoundedCTModel&& other) :
@@ -65,6 +67,7 @@ bool wordmodel::BoundedCTModel::putc(char c) {
 
 const std::string& wordmodel::BoundedCTModel::get_prediction(int* prediction_id) {
 
+  //the prediction logic is handled when an interface is triggered.
   if(prediction_id != NULL)
     *prediction_id = prediction_id_;
   return words_[prediction_];
@@ -195,7 +198,7 @@ void wordmodel::BoundedCTModel::push_regret(node_size node,
     //add it
     if(it == weights_[node-1].end())
       weights_[node - 1][prediction_] = 1;
-    else
+    else //or regret it
       (*it).second += 1;    
   }  
 }

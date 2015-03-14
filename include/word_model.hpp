@@ -6,6 +6,9 @@
 #include "tokenizer.hpp"
 #include "regularizer.hpp"
 
+#define CORPUS(NAME) CORPUS_DIR  "/" NAME
+
+
 namespace wordmodel {
   /**\brief The interface for a WordModel
    *
@@ -39,7 +42,7 @@ namespace wordmodel {
      * \param in The stream used to predict the next token
      * \return If the model is at an interface, meaning a new prediction has occured
      */ 
-    bool void putc(char c) = 0;
+    virtual bool putc(char c) = 0;
     
     /** \brief Discard all characters passed with putc. 
      *
@@ -51,7 +54,7 @@ namespace wordmodel {
      * The passed integer will be set to  a prediction_id which can be used
      * for reinforcement training with a call to reinforce()
      * 
-     * \param prediction_id corresponding to this prediction
+     * \param prediction_id corresponding to this prediction. 
      *
      * \return Prediction
      */
@@ -69,12 +72,14 @@ namespace wordmodel {
      *
 
      */
-    virtual bool interface() {return false;} const;   
+    virtual bool detected_interface() const {return true;}
 
     /** \brief Tell the model that it's at an interface.
      *
      */
     virtual void interface(bool interfaces) {};   
+
+    virtual double get_prediction_weight(int* prediction_id) const {return 0;}
 
   };
 

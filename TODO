@@ -36,7 +36,8 @@ Multiplexer:
         weights[i + 1] = weights[i] + model.get_prediction_weight(context_id)
       else
         weights[i+1] =  model.get_prediction_weight(context_id)
-	      
+
+
     
 
 Transitions
@@ -57,19 +58,19 @@ however it's been unclear how to incorporate those into the regret
 framework. One idea is to make the root node have morphology children,
 so that instead of the first token for tree navigation being the last
 observed token, it's instead a morphology 'token'. The next idea is to
-have a matrix so that the morphology vector multiplied by the matrix
-gives back a vector of weights on the words. This could replace or
-supplement the root vector that currently corresponds to the empty
-token. Yes, I think that's the right idea. The matrix will be sparse,
-so again a vector of unordered_maps. Next, the dimension of the
-morphology vector needs to be really low. For example, length of the
-string should be something like 0, 1, 2. Yes, I think clustering the
-morphology vectors into classes is the way to go. Oh boy, now we've
-added online classification into this nonsense. Is there a regret
-formulation for online classification? Well yes there is, but not for
-the class number. That also complicates the regret propogation. That's
-not the right word. It complicates the gradient propogation. But
-really it doesn't very much.
+have a projection matrix so that the morphology vector multiplied by
+the matrix gives back a vector of weights on the words. This could
+replace or supplement the root vector that currently corresponds to
+the empty token. Yes, I think that's the right idea. The matrix will
+be sparse, so again a vector of unordered_maps. Next, the dimension of
+the morphology vector needs to be really low. For example, length of
+the string should be something like 0, 1, 2. Yes, I think clustering
+the morphology vectors into classes is the way to go. Oh boy, now
+we've added online classification into this nonsense. Is there a
+regret formulation for online classification? Well yes there is, but
+not for the class number. That also complicates the regret
+propogation. That's not the right word. It complicates the gradient
+propogation. But really it doesn't very much.
 
 What about changing this idea around. Maybe the morphology vector
 should be used to choose which model should treat the string. The
@@ -118,6 +119,13 @@ fine though, because it will cause exploration of the interface
 tokens. Except ones I've seeded with high loss. This will work, I just
 need to find a grouping of objects without replace online learning
 algorithm.
+
+Other Notes
+====
+
+To better treat comparisons between layers, the weight vectors should
+be centered at 0, so that they sum to 0. Then new tokens are neutral
+instead of best.
 
 
 2. Nest models by calls to predictions and callbacks to regret (or something)

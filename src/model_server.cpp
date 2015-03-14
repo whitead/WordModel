@@ -1,5 +1,6 @@
 #include "model_server.hpp"
 #include "simple_model.hpp"
+#include "model_multiplexer.hpp"
 #include "bounded_context_tree_model.hpp"
 
 #include <fstream>
@@ -17,9 +18,9 @@ void ModelDispatcher::process_connect() {
   acceptor_.async_accept(socket_,
     [this](boost::system::error_code ec) {
       if(!ec) {
-	wordmodel::BoundedCTModel sm;
+	wordmodel::ModelMultiplexer<wordmodel::SimpleModel> mu(2);
 	std::cout << "Received connection, creating dispatcher" << std::endl;
-	std::make_shared< ModelServer<wordmodel::BoundedCTModel> >(std::move(sm), std::move(socket_))->start();
+	std::make_shared< ModelServer<wordmodel::ModelMultiplexer<wordmodel::SimpleModel> > >(std::move(mu), std::move(socket_))->start();
      }
       process_connect();
   });

@@ -28,25 +28,26 @@ namespace wordmodel {
   class Parser {
   public:
 
-    /** \brief Constructs a parser
-     *
-     *
-     * \param data The stream from which to parse the counts
-     * \param class_number The number of classes 
-     */
-    Parser(std::istream& data);
-
     /** \brief Default constructor
      *
      *
      */
     Parser();
-    
-    /** \brief parse data stream
-     *
-     */
-    void parse(std::istream& data);
 
+    /** \brief Add a word, using the stored last index
+     *  
+     *  Just calls add_pair and assumes the last add_word call was the
+     *  previous word.
+     */
+    void add_word(const std::string& word);
+
+
+    /** \brief Add a word, given the index of the last word
+     *  
+     *  Pass in a last_index of 0 for a starting word.
+     */
+    size_t add_pair(const std::string& word, size_t last_index);
+    
     /** \brief Get an index for a given word
      * 
      * \param word The word
@@ -128,7 +129,7 @@ namespace wordmodel {
 
   private:                   
     size_t word_number;
-    //This is the last index from a previous train
+    //the last index of the last word added
     size_t last_index_;
     //goes from words to index
     std::unordered_map<std::string, size_t> word_map;

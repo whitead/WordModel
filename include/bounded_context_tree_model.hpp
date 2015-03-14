@@ -44,12 +44,14 @@ namespace wordmodel {
     bool interface() const;   
     void interface(bool interfaces);
 
-  private:
+  private:    
     void start_predict(ContextData& data);
     void push_predict(node_size node, int i, ContextData& data);
     void finish_predict(ContextData& data);
     void push_regret(node_size node, int i, ContextData& data);
     void add_node(node_size node, int i, ContextData& data);
+
+    static const char *INTERFACE_TOKEN;
 
     ContextTree<BoundedCTModel, word_size, ContextData, 10>  ct_;
     //dense in the number of nodes, sparse in the words
