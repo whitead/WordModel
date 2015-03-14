@@ -1,6 +1,6 @@
 #include "bounded_context_tree_model.hpp"
 
-wordmodel::BoundedCTModel::INTERFACE_TOKEN = "<<!--INTERFACE--!>>";
+const std::string wordmodel::BoundedCTModel::INTERFACE_TOKEN = "<<!--INTERFACE--!>>";
 
 wordmodel::BoundedCTModel::BoundedCTModel() : BoundedCTModel(5) {}
 
@@ -12,7 +12,7 @@ wordmodel::BoundedCTModel::BoundedCTModel(int bound) : token_number_(0),
 						       ct_(20),
 						       bound_(bound),
 						       mistakes_(0),
-						       at_interface_(false){
+						       detected_interface_(false){
   ct_.set_visitor(this);
   //push null string
   words_.push_back("");
@@ -35,8 +35,8 @@ wordmodel::BoundedCTModel::BoundedCTModel(BoundedCTModel&& other) :
   bound_(other.bound_),
   mistakes_(other.mistakes_),
   token_number_(other.token_number_),
-  prediction_(other.prediction_)
-  at_interface_(other.at_interface_){
+  prediction_(other.prediction_),
+  detected_interface_(other.detected_interface_){
   ct_.set_visitor(this);
 
 }
@@ -50,18 +50,16 @@ void wordmodel::BoundedCTModel::write_summary(std::ostream& out) {
 bool wordmodel::BoundedCTModel::putc(char c) {
 
   //end of stream for now
-  if(c == '\x00')
-    return;
-
-  if(c == '\b') { //backspace
-    if(current_string_.size() > 0)
-      current_string_.erase(current_string_.size() - 1);
-  } 
-
-  if(std::isprint(c)) {
-    current_string_ += c; 
-    interface(false);
+  if(c != '\x00') {
+    if(c == '\b') { //backspace
+      if(current_string_.size() > 0)
+	current_string_.erase(current_string_.size() - 1);
+    } else {
+      current_string_ += c; 
+    }   
   }
+  
+  return detected_interface_;
 
 }
 
@@ -69,27 +67,33 @@ const std::string& wordmodel::BoundedCTModel::get_prediction(int* prediction_id)
 
   //the prediction logic is handled when an interface is triggered.
   if(prediction_id != NULL)
-    *prediction_id = prediction_id_;
+    prediction_id_ = *prediction_id;
   return words_[prediction_];
 }
 
-bool wordmodel::BoundedCTModel::interface() const {
-  return at_interface_;
+bool wordmodel::BoundedCTModel::detected_interface() const {
+  return detected_interface_;
 }
 
-void wordmodel::BoundedCTModel::interface(bool at_interface) const {
-  at_interface_ = at_interface;
-  if(at_interface_)
+void wordmodel::BoundedCTModel::interface(bool at_interface) {
+  if(at_interface && current_string_.size() > 0)
     do_predict();
 }
 
-void wordmodel::BoundedCTModeel::do_predict() {
+void wordmodel::BoundedCTModel::do_predict() {
 
+
+#ifdef DEBUG_BCT
+  std::cout << "Beginning prediction of <" << current_string_ << ">" << std::endl;
+#endif
     //first add our current string if it hasn't been seen before
     auto it = word_map_.find(current_string_);
     if(it == word_map_.end()) {
       word_map_[current_string_] = token_number_++;
       words_.emplace_back(current_string_);
+#ifdef DEBUG_BCT
+      std::cout << "Added <" << current_string_ << ">" << std::endl;
+#endif
     }
 
     //check if we regret it
@@ -109,6 +113,8 @@ void wordmodel::BoundedCTModeel::do_predict() {
 		&prediction_id_);
 
     current_string_.clear();
+
+    detected_interface_ = prediction_id_ == interface_id;
 
 }
 
@@ -164,7 +170,7 @@ void wordmodel::BoundedCTModel::finish_predict(ContextData& data) {
   
   //push back any new tokens encountered
   while(root_weights_.size() < token_number_)
-    root_weights_.push_back(mistakes_); 
+    root_weights_.push_back(mistakes_ / 2); 
 
 }
 

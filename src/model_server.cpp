@@ -1,10 +1,12 @@
 #include "model_server.hpp"
 #include "simple_model.hpp"
-#include "model_multiplexer.hpp"
 #include "bounded_context_tree_model.hpp"
+#include "model_multiplexer.hpp"
 
 #include <fstream>
 #include <iostream>
+
+#define BOUNDED
 
 using boost::asio::ip::tcp;
 
@@ -18,10 +20,18 @@ void ModelDispatcher::process_connect() {
   acceptor_.async_accept(socket_,
     [this](boost::system::error_code ec) {
       if(!ec) {
+#ifdef BOUNDED
+	wordmodel::ModelMultiplexer<wordmodel::BoundedCTModel> mu(1);
+	std::cout << "Received connection, creating dispatcher" << std::endl;
+	std::make_shared< ModelServer<wordmodel::ModelMultiplexer<wordmodel::BoundedCTModel> > >(std::move(mu), std::move(socket_))->start();	    
+#endif // BOUNDED
+
+#ifndef BOUNDED
 	wordmodel::ModelMultiplexer<wordmodel::SimpleModel> mu(2);
 	std::cout << "Received connection, creating dispatcher" << std::endl;
 	std::make_shared< ModelServer<wordmodel::ModelMultiplexer<wordmodel::SimpleModel> > >(std::move(mu), std::move(socket_))->start();
-     }
+#endif// BOUNDED
+      }
       process_connect();
   });
 }

@@ -117,6 +117,12 @@ namespace wordmodel {
 
       Context& con = activate_context(context_id);
 
+
+#ifdef DEBUG_CT
+      std::cout << "CT Prediction for context_id <" << *context_id << ">" << std::endl;
+#endif
+
+
       //make sure context is big enough
       //add 1 to make room for empty node/root node
       if(con.path.size() < length + 1)
@@ -162,7 +168,7 @@ namespace wordmodel {
 	  // if our prediction fails
 	  for(int j = i+1; j < length+1; ++j) {
 #ifdef DEBUG_CT
-	    std::cout << "I want to add a " << data_map_[c] << " node to chain starting at" << con.path[i].id << std::endl;
+	    std::cout << "I want to add a " << data_map_[c] << " node to chain starting at " << con.path[i].id << " at a depth of " << j - i << std::endl;
 #endif
 	    con.path[j].token = data_map_[c];
 	    con.addition_size++;
@@ -180,6 +186,10 @@ namespace wordmodel {
     }
 
     void regret(int context_id, int depth) {
+
+#ifdef DEBUG_CT
+      std::cout << "CT Regret for context_id <" << context_id << ">" << std::endl;
+#endif
       
       //check if id is valid
       if(context_id < 0 || context_id > max_contexts_)
@@ -189,6 +199,11 @@ namespace wordmodel {
       for(auto i: inactive_ids_)
 	if(i == context_id)
 	  return;	
+
+#ifdef DEBUG_CT
+      std::cout << "CT Regret for context_id <" << context_id << ">: proceeding, due to valid id" << std::endl;
+#endif
+
 	  
       //get context
       Context& con = contexts_[context_id];      

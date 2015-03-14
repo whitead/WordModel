@@ -25,7 +25,7 @@ namespace wordmodel {
     //allows context tree access for callbacks
     friend class ContextTree<BoundedCTModel, word_size, ContextData, 10>;
 
-    enum {root_node = 0};
+    enum {root_node = 0, interface_id = 1};
 
   public: 
     BoundedCTModel();
@@ -41,7 +41,7 @@ namespace wordmodel {
     const std::string& get_prediction(int* prediction_id) override;
     void prediction_result(int prediction_id, bool outcome) override;
     using WordModel::get_prediction;
-    bool interface() const;   
+    bool detected_interface() const;   
     void interface(bool interfaces);
 
   private:    
@@ -50,8 +50,9 @@ namespace wordmodel {
     void finish_predict(ContextData& data);
     void push_regret(node_size node, int i, ContextData& data);
     void add_node(node_size node, int i, ContextData& data);
+    void do_predict();
 
-    static const char *INTERFACE_TOKEN;
+    static const std::string INTERFACE_TOKEN;
 
     ContextTree<BoundedCTModel, word_size, ContextData, 10>  ct_;
     //dense in the number of nodes, sparse in the words
@@ -69,7 +70,7 @@ namespace wordmodel {
     word_size token_number_;
     word_size prediction_;
     std::string current_string_;
-    bool at_interface_;
+    bool detected_interface_;
   };
 
 }
