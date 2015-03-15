@@ -19,7 +19,6 @@ using namespace boost;
 
 struct SimpleModelTest {
   SimpleModel sm;
-
 };
 
 BOOST_FIXTURE_TEST_SUITE( simple_model_test, SimpleModelTest )
@@ -35,8 +34,16 @@ BOOST_AUTO_TEST_CASE( simplemodel_construction )
 BOOST_AUTO_TEST_CASE( simplemodel_predict )
 {
   string s("Hello World Hello");
-  for(char& c: s)
-    sm.putc(c);
+  for(char& c: s) {
+    std::cout << "prediction:" << sm.get_prediction() << std::endl;
+    if(c == ' ')      
+      sm.interface(true);
+    else
+      sm.putc(c);
+  }
+
+  std::cout << sm.get_prediction() << std::endl;
+  
   BOOST_REQUIRE( sm.get_prediction().compare("World") == 0 );
   
 }
