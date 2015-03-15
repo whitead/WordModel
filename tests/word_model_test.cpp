@@ -153,12 +153,89 @@ BOOST_AUTO_TEST_CASE( bounded_tree_grimm ) {
   int length = 10000;
   while(grimm.good() && length > 0) {
     bcm.putc(grimm.get());
+    bcm.interface(true);
     length--;
   }
 
-  std::cout << t.elapsed() << std::endl;
   BOOST_REQUIRE( t.elapsed() < 0.5);
 }
+
+BOOST_AUTO_TEST_CASE( bounded_tree_grimm_mistakes ) {
+
+  BoundedCTModel bcm; 
+  //SimpleModel bcm;
+  ifstream grimm;
+  grimm.open("grimm.txt");
+  BOOST_REQUIRE( grimm.is_open() );
+
+  int length = 500000;
+  int starting_length = length;
+
+  while(grimm.good() && length > starting_length / 4 ) {
+    bcm.putc(grimm.get());
+    bcm.interface(true);
+    length--;
+  }
+
+  const std::string* prediction = NULL;
+  int correct = 0;
+  int mistakes = 0;
+  char c;
+  while(grimm.good() && length > 0) {
+    if(prediction) {
+      if((*prediction)[0] == c)
+	correct++;
+      else
+	mistakes++;
+    }
+    c = grimm.get();
+    bcm.putc(c);
+    bcm.interface(true);
+    prediction = &bcm.get_prediction();
+    length--;
+  }
+
+  std::cout << "Accuracy: " << correct << "/" << mistakes + correct << " = " << static_cast<double>(correct)/(correct + mistakes) <<  std::endl;
+}
+
+BOOST_AUTO_TEST_CASE( simple_model_grimm_mistakes ) {
+
+  SimpleModel bcm;
+  ifstream grimm;
+  grimm.open("grimm.txt");
+  BOOST_REQUIRE( grimm.is_open() );
+
+  int length = 50000;
+  int starting_length = length;
+
+  while(grimm.good() && length > starting_length / 4) {
+    bcm.putc(grimm.get());
+    bcm.interface(true);
+    length--;
+  }
+
+  const std::string* prediction = NULL;
+  int correct = 0;
+  int mistakes = 0;
+  char c;
+  while(grimm.good() && length > 0) {
+    if(prediction) {
+      if((*prediction)[0] == c)
+	correct++;
+      else
+	mistakes++;
+    }
+    c = grimm.get();
+    bcm.putc(c);
+    bcm.interface(true);
+    prediction = &bcm.get_prediction();
+    length--;
+  }
+
+  std::cout << "Accuracy: " << correct << "/" << mistakes + correct << " = " << static_cast<double>(correct) /(correct + mistakes) <<  std::endl;
+}
+
+
 
 
 BOOST_AUTO_TEST_SUITE_END()

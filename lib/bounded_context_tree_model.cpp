@@ -2,7 +2,7 @@
 
 const std::string wordmodel::BoundedCTModel::INTERFACE_TOKEN = "<<!--INTERFACE--!>>";
 
-wordmodel::BoundedCTModel::BoundedCTModel() : BoundedCTModel(2) {}
+wordmodel::BoundedCTModel::BoundedCTModel() : BoundedCTModel(3) {}
 
 wordmodel::BoundedCTModel::~BoundedCTModel() {
 }
@@ -21,7 +21,7 @@ wordmodel::BoundedCTModel::BoundedCTModel(int bound) : token_number_(0),
   //push interface token
   words_.push_back(INTERFACE_TOKEN);
   word_map_[INTERFACE_TOKEN] = token_number_++;
-  root_weights_.push_back(1.);  
+  root_weights_.push_back(0.);  
 }
 wordmodel::BoundedCTModel::BoundedCTModel(BoundedCTModel&& other) :
   ct_(std::move(other.ct_)),  
@@ -141,7 +141,7 @@ void wordmodel::BoundedCTModel::start_predict(ContextData& data) {
 #endif
   data.resize(root_weights_.size());
   for(int i = 0; i < root_weights_.size(); ++i) {
-    data[i] = root_weights_[i];
+    data[i] = root_weights_[i] / root_weights_[0];
 #ifdef DEBUG_BCT
     std::cout << "\t <" << words_[i] << ">=" << data[i] << std::endl;
 #endif
@@ -194,7 +194,7 @@ void wordmodel::BoundedCTModel::push_predict(node_size node,
     //subtract 1 since root_node is stored separately
     for(auto w: weights_[node - 1]) {
       //iterating through the weights for the given node
-      data[w.first] += w.second;
+      data[w.first] += w.second / weights_[node - 1][0];
     }
   }
 }
@@ -205,6 +205,7 @@ void wordmodel::BoundedCTModel::push_regret(node_size node,
 
   if(node == root_node) {
     root_weights_[prediction_] += 1;
+    root_weights_[0] += 1;
   } else {  
     //subtract 1 since root_node is stored separately
     auto it = weights_[node - 1].find(prediction_);
@@ -215,6 +216,9 @@ void wordmodel::BoundedCTModel::push_regret(node_size node,
       weights_[node - 1][prediction_] = 1;
     else //or regret it
       (*it).second += 1;    
+
+    //keep track of total regret
+    weights_[node - 1][0] += 1;
   }  
 }
 
@@ -222,5 +226,9 @@ void wordmodel::BoundedCTModel::add_node(node_size node,
 					 int depth,
 					 ContextData& data) {  
   std::unordered_map<word_size, double> temp;
+  //null string is 0
+  temp[0] = 0;
   weights_.emplace_back(std::move(temp));
+  //push back null string
+
 }

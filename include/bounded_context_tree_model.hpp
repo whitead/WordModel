@@ -9,6 +9,7 @@
 #include <unordered_map>
 #include <istream>
 #include <sstream>
+#include <cmath>
 
 
 namespace wordmodel {
