@@ -109,9 +109,8 @@ void wordmodel::BoundedCTModel::do_predict() {
     if(prediction_ != word_map_[current_string_]) {
       mistakes_++;
       ct_.regret(prediction_id_, bound_);
-    } else {
-      std::cout << "Correctly predicted <" << current_string_ <<">" << " is <" << words_[prediction_] << ">" << std::endl;
     }
+
 
     prediction_context_.push_back(word_map_[current_string_]);
 
@@ -180,7 +179,7 @@ void wordmodel::BoundedCTModel::finish_predict(ContextData& data) {
   
   //push back any new tokens encountered
   while(root_weights_.size() < token_number_)
-    root_weights_.push_back(mistakes_);  //empirical decision
+    root_weights_.push_back(mistakes_ / root_weights_.size());  //empirical decision
 
 }
 
