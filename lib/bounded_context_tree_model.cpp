@@ -2,7 +2,7 @@
 
 const std::string wordmodel::BoundedCTModel::INTERFACE_TOKEN = "<<!--INTERFACE--!>>";
 
-wordmodel::BoundedCTModel::BoundedCTModel() : BoundedCTModel(3) {}
+wordmodel::BoundedCTModel::BoundedCTModel() : BoundedCTModel(2) {}
 
 wordmodel::BoundedCTModel::~BoundedCTModel() {
 }
@@ -109,6 +109,12 @@ void wordmodel::BoundedCTModel::do_predict() {
     if(prediction_ != word_map_[current_string_]) {
       mistakes_++;
       ct_.regret(prediction_id_, bound_);
+      //it is convienent to use prediction_ 
+      //as a place to store the correct answer
+      //      prediction_ = word_map_[current_string_];
+      //      ct_.reinforce(prediction_id_, bound_);
+    } else{
+      ct_.reinforce(prediction_id_, bound_);
     }
 
 
@@ -141,7 +147,7 @@ void wordmodel::BoundedCTModel::start_predict(ContextData& data) {
 #endif
   data.resize(root_weights_.size());
   for(int i = 0; i < root_weights_.size(); ++i) {
-    data[i] = root_weights_[i] / root_weights_[0];
+    data[i] = root_weights_[i] / root_weights_.size();
 #ifdef DEBUG_BCT
     std::cout << "\t <" << words_[i] << ">=" << data[i] << std::endl;
 #endif
@@ -194,7 +200,7 @@ void wordmodel::BoundedCTModel::push_predict(node_size node,
     //subtract 1 since root_node is stored separately
     for(auto w: weights_[node - 1]) {
       //iterating through the weights for the given node
-      data[w.first] += w.second / weights_[node - 1][0];
+      data[w.first] += w.second / weights_[node - 1].size();
     }
   }
 }
@@ -205,7 +211,6 @@ void wordmodel::BoundedCTModel::push_regret(node_size node,
 
   if(node == root_node) {
     root_weights_[prediction_] += 1;
-    root_weights_[0] += 1;
   } else {  
     //subtract 1 since root_node is stored separately
     auto it = weights_[node - 1].find(prediction_);
@@ -216,19 +221,40 @@ void wordmodel::BoundedCTModel::push_regret(node_size node,
       weights_[node - 1][prediction_] = 1;
     else //or regret it
       (*it).second += 1;    
-
-    //keep track of total regret
-    weights_[node - 1][0] += 1;
   }  
 }
 
+void wordmodel::BoundedCTModel::push_reinforce(node_size node,
+					    int depth,
+					    ContextData& data) {
+
+  if(node == root_node) {
+    root_weights_[prediction_] -= 1;
+  } else {  
+    //subtract 1 since root_node is stored separately
+    auto it = weights_[node - 1].find(prediction_);
+  
+    //subtract 1 since root_node is stored separately
+    //add it
+    if(it == weights_[node-1].end())
+      weights_[node - 1][prediction_] = -1;
+    else //or regret it
+      (*it).second -= 1;    
+  }  
+}
+
+
 void wordmodel::BoundedCTModel::add_node(node_size node,
 					 int depth,
-					 ContextData& data) {  
+					 ContextData& data,
+					 bool regret) {  
   std::unordered_map<word_size, double> temp;
-  //null string is 0
-  temp[0] = 0;
   weights_.emplace_back(std::move(temp));
-  //push back null string
+
+  //regret or reinforce
+  if(regret)
+    push_regret(node, depth, data);
+  else
+    push_reinforce(node, depth, data);
 
 }

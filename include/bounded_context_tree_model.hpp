@@ -51,7 +51,8 @@ namespace wordmodel {
     void push_predict(node_size node, int i, ContextData& data);
     void finish_predict(ContextData& data);
     void push_regret(node_size node, int i, ContextData& data);
-    void add_node(node_size node, int i, ContextData& data);
+    void push_reinforce(node_size node, int i, ContextData& data);
+    void add_node(node_size node, int i, ContextData& data, bool regret);
     void do_predict();
 
     static const std::string INTERFACE_TOKEN;

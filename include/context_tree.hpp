@@ -190,16 +190,10 @@ namespace wordmodel {
 #ifdef DEBUG_CT
       std::cout << "CT Regret for context_id <" << context_id << ">" << std::endl;
 #endif
-      
-      //check if id is valid
-      if(context_id < 0 || context_id > max_contexts_)
+
+      if(!validate_id(context_id))
 	return;
       
-      //check if it's still valid
-      for(auto i: inactive_ids_)
-	if(i == context_id)
-	  return;	
-
 #ifdef DEBUG_CT
       std::cout << "CT Regret for context_id <" << context_id << ">: proceeding, due to valid id" << std::endl;
 #endif
@@ -220,45 +214,40 @@ namespace wordmodel {
       visitor->push_regret(con.path[index].id, 
 			   index,
 			   con.data);			     
-      index++;
+      con_add_nodes(con, index + 1, depth, true);                 
+      deactivate_context(context_id);
+    }
 
-      
+    void reinforce(int context_id, int depth) {
 
-      Vertex& last = con.leaf;
-	
-      //add nodes
-      for(int i = index; i < depth && i < con.addition_size + index; ++i) {
 #ifdef DEBUG_CT
-	std::cout << "About to add " << vertex_number_
-		  << ", a " << con.path[i].token 
-		  << " node, to " << tree_[last].id << std::endl;
+      std::cout << "CT Reinforce for context_id <" << context_id << ">" << std::endl;
 #endif
 
-	Vertex v = boost::add_vertex(tree_);
-	tree_[v].id = vertex_number_++;
-	tree_[v].token = con.path[i].token;
+      if(!validate_id(context_id))
+	return;
+      
+#ifdef DEBUG_CT
+      std::cout << "CT Reinforce for context_id <" << context_id << ">: proceeding, due to valid id" << std::endl;
+#endif
 
-	//check if we should be using a subtree
-	if(!tree_[last].subtree && boost::out_degree(last,tree_) == max_degree) {
-	  //split it up
-	  split_vertex(last);
-	}
-
-	//check if we're using a subtree
-	if(tree_[last].subtree) {
-	  //simple
-	  tree_[last].subtree->
-	    insert(std::make_pair(con.path[i].token,v));
 	  
-	}  else {
-	  //add normally
-	  boost::add_edge(last, v, tree_);
-	}
-	last = v;
-	visitor->add_node(tree_[v].id, index, con.data);
+      //get context
+      Context& con = contexts_[context_id];      
+      
+      //move down through to the new vertices 
+      int index = 0;
+      for(;con.path[index].id != tree_[con.leaf].id; index++) {
+	visitor->push_reinforce(con.path[index].id, 
+			     index,
+			     con.data);			     
       }
-      
-      
+
+      //now push the leaf
+      visitor->push_reinforce(con.path[index].id, 
+			   index,
+			   con.data);			     
+      con_add_nodes(con, index + 1, depth, false);                 
       deactivate_context(context_id);
     }
 
@@ -310,6 +299,59 @@ namespace wordmodel {
       return key^hash_fn_(hash_fn_(token) + 0x9e3779b9 + (key << 6) + (key >> 2));
     }
 
+    void con_add_nodes(Context& con, int index, int depth, bool regret) {
+
+      Vertex& last = con.leaf;
+	
+      //add nodes
+      for(int i = index; i < depth && i < con.addition_size + index; ++i) {
+#ifdef DEBUG_CT
+	std::cout << "About to add " << vertex_number_
+		  << ", a " << con.path[i].token 
+		  << " node, to " << tree_[last].id << std::endl;
+#endif
+
+	Vertex v = boost::add_vertex(tree_);
+	tree_[v].id = vertex_number_++;
+	tree_[v].token = con.path[i].token;
+
+	//check if we should be using a subtree
+	if(!tree_[last].subtree && boost::out_degree(last,tree_) == max_degree) {
+	  //split it up
+	  split_vertex(last);
+	}
+
+	//check if we're using a subtree
+	if(tree_[last].subtree) {
+	  //simple
+	  tree_[last].subtree->
+	    insert(std::make_pair(con.path[i].token,v));
+	  
+	}  else {
+	  //add normally
+	  boost::add_edge(last, v, tree_);
+	}
+	last = v;
+	visitor->add_node(tree_[v].id, index, con.data, regret);
+      }
+
+
+    }
+
+
+    bool validate_id(int context_id) {
+      //check if id is valid
+      if(context_id < 0 || context_id > max_contexts_)
+	return false;
+      
+      //check if it's still valid
+      for(auto i: inactive_ids_)
+	if(i == context_id)
+	  return false;	
+      
+      return true;
+    }
+
     //put the context back in the inactive set
     void deactivate_context(int context_id) {
       for(auto it = active_ids_.begin(); it != active_ids_.end(); ++it) {
@@ -321,7 +363,7 @@ namespace wordmodel {
       inactive_ids_.push_back(context_id);
     }
 
-    void flush_ids_() {
+    void flush_ids() {
       //flush half of the contexts
       while(2 * inactive_ids_.size() < max_contexts_) {
 	inactive_ids_.push_back(active_ids_.front());
@@ -332,7 +374,7 @@ namespace wordmodel {
     Context& activate_context(int* context_id) {
       //get a free context_id
       if(inactive_ids_.empty())
-	flush_ids_();
+	flush_ids();
       
       *context_id = inactive_ids_.front();      
       inactive_ids_.pop_front();      
