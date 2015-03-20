@@ -2,7 +2,7 @@
 
 const std::string wordmodel::BoundedCTModel::INTERFACE_TOKEN = "<<!--INTERFACE--!>>";
 
-wordmodel::BoundedCTModel::BoundedCTModel() : BoundedCTModel(2) {}
+wordmodel::BoundedCTModel::BoundedCTModel() : BoundedCTModel(5) {}
 
 wordmodel::BoundedCTModel::~BoundedCTModel() {
 }
@@ -108,13 +108,13 @@ void wordmodel::BoundedCTModel::do_predict() {
     //automatically passes on first pass because both are 0
     if(prediction_ != word_map_[current_string_]) {
       mistakes_++;
-      ct_.regret(prediction_id_, bound_);
+      //      ct_.regret(prediction_id_, bound_);
       //it is convienent to use prediction_ 
       //as a place to store the correct answer
-      //      prediction_ = word_map_[current_string_];
-      //      ct_.reinforce(prediction_id_, bound_);
-    } else{
+      prediction_ = word_map_[current_string_];
       ct_.reinforce(prediction_id_, bound_);
+    } else{
+      //      ct_.reinforce(prediction_id_, bound_);
     }
 
 
@@ -147,7 +147,7 @@ void wordmodel::BoundedCTModel::start_predict(ContextData& data) {
 #endif
   data.resize(root_weights_.size());
   for(int i = 0; i < root_weights_.size(); ++i) {
-    data[i] = root_weights_[i] / root_weights_.size();
+    data[i] = root_weights_[i] * exp(-root_weights_.size());
 #ifdef DEBUG_BCT
     std::cout << "\t <" << words_[i] << ">=" << data[i] << std::endl;
 #endif
@@ -200,7 +200,7 @@ void wordmodel::BoundedCTModel::push_predict(node_size node,
     //subtract 1 since root_node is stored separately
     for(auto w: weights_[node - 1]) {
       //iterating through the weights for the given node
-      data[w.first] += w.second / weights_[node - 1].size();
+      data[w.first] += w.second * exp(-weights_[node - 1].size());
     }
   }
 }
