@@ -31,8 +31,8 @@ namespace wordmodel {
     ~SimpleModel();
     void write_summary(std::ostream& out) override;
     bool putc(char c) override;
-    const std::string& get_prediction(int* prediction_id) override;
-    double get_prediction_weight(int* prediction_id) const override;
+    const std::string& get_prediction(unsigned int* prediction_id) override;
+    double get_prediction_weight(unsigned int* prediction_id) const override;
     using WordModel::get_prediction;
     void interface(bool interface) override;
     bool detected_interface() const override;
@@ -47,7 +47,7 @@ namespace wordmodel {
     bool detected_interface_;
     
     std::string prediction_;
-    int last_prediction_id_;
+    unsigned int last_prediction_id_;
     double last_prediction_weight_;
   };
 

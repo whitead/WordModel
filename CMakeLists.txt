@@ -8,7 +8,7 @@ set (WordModel_DESCRIPTION "A C++ syntax and topic word model")
 
 
 #compilation flags
-set (CMAKE_CXX_FLAGS "-std=c++11 -Ofast -march=native")
+set (CMAKE_CXX_FLAGS "-std=c++11 -Ofast -march=native -Wall")
 #set (CMAKE_CXX_FLAGS "-std=c++11 -O0 -DDEBUG_BCT -DDEBUG_CT -DDEBUG_PARSER -g")
 
 add_definitions (${CMAKE_CXX_FLAGS})

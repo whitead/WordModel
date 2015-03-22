@@ -21,6 +21,8 @@ add_custom_target (test ALL
 		   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 		   COMMENT "Running BOOST tests" VERBATIM)
 
-		 
-file (COPY grimm.txt DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+file(GLOB training "*.txt")
+foreach(file ${training})
+  file (COPY ${file} DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+endforeach()
 file (COPY hello_world_ref.dot DESTINATION ${CMAKE_CURRENT_BINARY_DIR})

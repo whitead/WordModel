@@ -164,31 +164,31 @@ BOOST_AUTO_TEST_CASE( bounded_tree_grimm_mistakes ) {
 
   BoundedCTModel bcm; 
   //SimpleModel bcm;
-  ifstream grimm;
-  grimm.open("grimm.txt");
-  BOOST_REQUIRE( grimm.is_open() );
+  ifstream corpus;
+  corpus.open("corpus.txt");
+  BOOST_REQUIRE( corpus.is_open() );
 
-  int length = 500000;
-  int starting_length = length;
+  long int length = 1500000;
+  long int starting_length = length;
 
-  while(grimm.good() && length > starting_length / 4 ) {
-    bcm.putc(grimm.get());
+  while(corpus.good() && length > starting_length / 4 ) {
+    bcm.putc(corpus.get());
     bcm.interface(true);
     length--;
   }
 
   const std::string* prediction = NULL;
-  int correct = 0;
-  int mistakes = 0;
+  long int correct = 0;
+  long int mistakes = 0;
   char c;
-  while(grimm.good() && length > 0) {
+  while(corpus.good() && length > 0) {
     if(prediction) {
       if((*prediction)[0] == c)
 	correct++;
       else
 	mistakes++;
     }
-    c = grimm.get();
+    c = corpus.get();
     bcm.putc(c);
     bcm.interface(true);
     prediction = &bcm.get_prediction();
@@ -205,7 +205,7 @@ BOOST_AUTO_TEST_CASE( simple_model_grimm_mistakes ) {
   grimm.open("grimm.txt");
   BOOST_REQUIRE( grimm.is_open() );
 
-  int length = 50000;
+  int length = 5000;
   int starting_length = length;
 
   while(grimm.good() && length > starting_length / 4) {

@@ -30,7 +30,7 @@ namespace wordmodel {
      *  \param prediction_id  Then prediction id
      *  \param outcome True if prediction was used
      */
-    virtual void prediction_result(int prediction_id, bool outcome) {};
+    virtual void prediction_result(unsigned int prediction_id, bool outcome) {};
 
     /** \brief Send a character to the model
      *
@@ -58,7 +58,7 @@ namespace wordmodel {
      *
      * \return Prediction
      */
-    virtual const std::string& get_prediction(int* prediction_id) = 0;
+    virtual const std::string& get_prediction(unsigned int* prediction_id) = 0;
 
     /** \breif Return a predicted string
      * 
@@ -78,14 +78,14 @@ namespace wordmodel {
     /** \brief Return cumulatiave training mistakes
      *
      */
-    virtual int training_mistakes() const {return 0;}
+    virtual long int training_mistakes() const {return 0;}
 
     /** \brief Tell the model that it's at an interface.
      *
      */
     virtual void interface(bool interfaces) {};   
 
-    virtual double get_prediction_weight(int* prediction_id) const {return 0;}
+    virtual double get_prediction_weight(unsigned int* prediction_id) const {return 0;}
 
   };
 

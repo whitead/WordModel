@@ -170,10 +170,10 @@ private:
     int length = 250000;
 
     std::cout << "Reading training " << length << " chars lines of training data from: " << std::endl;  
-    std::cout << CORPUS("grimm.txt") << std::endl;
+    std::cout << CORPUS("corpus.txt") << std::endl;
     std::ifstream grimm;
-    grimm.open( CORPUS("grimm.txt") );
-
+    grimm.open( CORPUS("corpus.txt") );
+    length = 1500000;
     while(grimm.good() && length > 0) {
       wm_.putc(grimm.get());
       length--;

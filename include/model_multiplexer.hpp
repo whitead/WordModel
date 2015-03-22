@@ -14,7 +14,7 @@ namespace wordmodel {
 
     using WordModel::get_prediction;
     
-    const std::string& get_prediction(int* prediction_id) override{ 
+    const std::string& get_prediction(unsigned int* prediction_id) override{ 
       int i = 0;
       while(i < models_.size() - 1) {
 	//go up higher as long as we're at an interface
@@ -52,8 +52,8 @@ namespace wordmodel {
 	m.write_summary(out);      
     }
 
-    int training_mistakes() const override {
-      int sum = 0;
+    long int training_mistakes() const override {
+      long int sum = 0;
       for(auto &m: models_)
 	sum += m.training_mistakes();
       return sum;

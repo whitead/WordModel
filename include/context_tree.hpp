@@ -71,7 +71,7 @@ namespace wordmodel {
       token_number_++;
 
       contexts_ = new Context[max_contexts];
-      for(int i = 0; i < max_contexts; i++)
+      for(unsigned int i = 0; i < max_contexts; i++)
 	inactive_ids_.push_back(i);
     }
     
@@ -83,9 +83,9 @@ namespace wordmodel {
 				       max_contexts_(other.max_contexts_),
 				       data_list_(std::move(other.data_list_)),
 				       data_map_(std::move(other.data_map_)),
+				       contexts_(other.contexts_),
 				       active_ids_(std::move(other.active_ids_)),
-				       inactive_ids_(std::move(other.inactive_ids_)),
-				       contexts_(other.contexts_){
+				       inactive_ids_(std::move(other.inactive_ids_)){
 
       other.visitor = NULL;
       other.contexts_ = NULL;
@@ -113,7 +113,7 @@ namespace wordmodel {
     } 
 
     template<typename A>
-    void predict(A data_frag, size_t length, int* context_id) {
+    void predict(A data_frag, size_t length, unsigned int* context_id) {
 
       Context& con = activate_context(context_id);
 
@@ -133,7 +133,7 @@ namespace wordmodel {
       //descend through root
       Vertex v = root_;      
       bool found_node;
-      for(int i = 0;; ++i) {
+      for(unsigned int i = 0;; ++i) {
 
 	//treat the ith vertex
 	//store the path we're taking
@@ -166,7 +166,7 @@ namespace wordmodel {
 	  con.leaf = v;
 	  // Now we process the additions we'd like to make
 	  // if our prediction fails
-	  for(int j = i+1; j < length+1; ++j) {
+	  for(unsigned int j = i+1; j < length+1; ++j) {
 #ifdef DEBUG_CT
 	    std::cout << "I want to add a " << data_map_[c] << " node to chain starting at " << con.path[i].id << " at a depth of " << j - i << std::endl;
 #endif
@@ -185,7 +185,7 @@ namespace wordmodel {
       
     }
 
-    void regret(int context_id, int depth) {
+    void regret(unsigned int context_id, int depth) {
 
 #ifdef DEBUG_CT
       std::cout << "CT Regret for context_id <" << context_id << ">" << std::endl;
@@ -218,7 +218,7 @@ namespace wordmodel {
       deactivate_context(context_id);
     }
 
-    void reinforce(int context_id, int depth) {
+    void reinforce(unsigned int context_id, int depth) {
 
 #ifdef DEBUG_CT
       std::cout << "CT Reinforce for context_id <" << context_id << ">" << std::endl;
@@ -339,7 +339,7 @@ namespace wordmodel {
     }
 
 
-    bool validate_id(int context_id) {
+    bool validate_id(unsigned int context_id) {
       //check if id is valid
       if(context_id < 0 || context_id > max_contexts_)
 	return false;
@@ -353,7 +353,7 @@ namespace wordmodel {
     }
 
     //put the context back in the inactive set
-    void deactivate_context(int context_id) {
+    void deactivate_context(unsigned int context_id) {
       for(auto it = active_ids_.begin(); it != active_ids_.end(); ++it) {
 	if(*it == context_id) {
 	  active_ids_.erase(it);
@@ -371,7 +371,7 @@ namespace wordmodel {
       }
     }
 
-    Context& activate_context(int* context_id) {
+    Context& activate_context(unsigned int* context_id) {
       //get a free context_id
       if(inactive_ids_.empty())
 	flush_ids();
@@ -388,6 +388,12 @@ namespace wordmodel {
       return con;
     }
 
+
+    /**
+     * This is used when we split up a parent-children relationship
+     * into a subtree.  Currently the child vertices are not deleted,
+     * which I'm not sure is the correct decision.
+     **/
     void split_vertex(Vertex& v) {
 
       //set-up v to more children

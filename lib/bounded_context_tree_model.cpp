@@ -7,7 +7,7 @@ wordmodel::BoundedCTModel::BoundedCTModel() : BoundedCTModel(5) {}
 wordmodel::BoundedCTModel::~BoundedCTModel() {
 }
 
-wordmodel::BoundedCTModel::BoundedCTModel(int bound) : token_number_(0),
+wordmodel::BoundedCTModel::BoundedCTModel(unsigned int bound) : token_number_(0),
 						       prediction_(0),
 						       ct_(20),
 						       bound_(bound),
@@ -24,18 +24,18 @@ wordmodel::BoundedCTModel::BoundedCTModel(int bound) : token_number_(0),
   root_weights_.push_back(0.);  
 }
 wordmodel::BoundedCTModel::BoundedCTModel(BoundedCTModel&& other) :
+  token_number_(other.token_number_),
+  prediction_(other.prediction_),
   ct_(std::move(other.ct_)),  
   weights_(std::move(other.weights_)),
   root_weights_(std::move(other.root_weights_)),
+  word_map_(std::move(other.word_map_)),
   words_(std::move(other.words_)),
   prediction_context_(std::move(other.prediction_context_)),  		      
-  word_map_(std::move(other.word_map_)),
   prediction_id_(other.prediction_id_),
-  current_string_(std::move(other.current_string_)),
   bound_(other.bound_),
   mistakes_(other.mistakes_),
-  token_number_(other.token_number_),
-  prediction_(other.prediction_),
+  current_string_(std::move(other.current_string_)),
   detected_interface_(other.detected_interface_){
   ct_.set_visitor(this);
 
@@ -63,7 +63,7 @@ bool wordmodel::BoundedCTModel::putc(char c) {
 
 }
 
-const std::string& wordmodel::BoundedCTModel::get_prediction(int* prediction_id) {
+const std::string& wordmodel::BoundedCTModel::get_prediction(unsigned int* prediction_id) {
 
   //the prediction logic is handled when an interface is triggered.
   if(prediction_id != NULL)
@@ -75,7 +75,7 @@ bool wordmodel::BoundedCTModel::detected_interface() const {
   return detected_interface_;
 }
 
-int wordmodel::BoundedCTModel::training_mistakes() const {
+long int wordmodel::BoundedCTModel::training_mistakes() const {
   return mistakes_;
 }
 
@@ -133,7 +133,7 @@ void wordmodel::BoundedCTModel::do_predict() {
 
 }
 
-void wordmodel::BoundedCTModel::prediction_result(int prediction_id, bool outcome) {
+void wordmodel::BoundedCTModel::prediction_result(unsigned int prediction_id, bool outcome) {
   if(!outcome)
     ct_.regret(prediction_id, bound_);
 }
@@ -146,8 +146,8 @@ void wordmodel::BoundedCTModel::start_predict(ContextData& data) {
   std::cout << "Initial weights: " << std::endl;
 #endif
   data.resize(root_weights_.size());
-  for(int i = 0; i < root_weights_.size(); ++i) {
-    data[i] = root_weights_[i] * exp(-root_weights_.size());
+  for(unsigned int i = 0; i < root_weights_.size(); ++i) {
+    data[i] = root_weights_[i];
 #ifdef DEBUG_BCT
     std::cout << "\t <" << words_[i] << ">=" << data[i] << std::endl;
 #endif
@@ -172,11 +172,11 @@ void wordmodel::BoundedCTModel::finish_predict(ContextData& data) {
 
 #ifdef DEBUG_BCT
   std::cout << "Final weights: " << std::endl;
-  for(int i = 0; i < data.size(); i++)
+  for(unsigned int i = 0; i < data.size(); i++)
     std::cout << "\t <" << words_[i] << ">=" << data[i] << std::endl;
 #endif
 
-  for(int i = 0; i < data.size(); i++) {
+  for(unsigned int i = 0; i < data.size(); i++) {
     if(data[i] < min) {
       min = data[i];
       prediction_ = i;
@@ -200,7 +200,7 @@ void wordmodel::BoundedCTModel::push_predict(node_size node,
     //subtract 1 since root_node is stored separately
     for(auto w: weights_[node - 1]) {
       //iterating through the weights for the given node
-      data[w.first] += w.second * exp(-weights_[node - 1].size());
+      data[w.first] += w.second;//
     }
   }
 }

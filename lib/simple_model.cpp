@@ -2,7 +2,7 @@
 
 wordmodel::SimpleModel::SimpleModel(){
   std::string delims(TOKENIZER_DELIMS);
-  for(int i = 0; i < delims.size(); i++) {
+  for(unsigned int i = 0; i < delims.size(); i++) {
     delimiters_.push_back(delims.substr(i,1));
   }
 }
@@ -63,7 +63,7 @@ bool wordmodel::SimpleModel::putc(char c) {
   return detected_interface_;
 }
 
-const std::string& wordmodel::SimpleModel::get_prediction(int* prediction_id) {
+const std::string& wordmodel::SimpleModel::get_prediction(unsigned int* prediction_id) {
   
   //assign reference
   if(prediction_id != NULL)
@@ -106,7 +106,7 @@ void wordmodel::SimpleModel::do_train() {
   }
 }
 
-double wordmodel::SimpleModel::get_prediction_weight(int* prediction_id) const {
+double wordmodel::SimpleModel::get_prediction_weight(unsigned int* prediction_id) const {
   if(*prediction_id == last_prediction_id_)
     return last_prediction_weight_;
   return 0;
